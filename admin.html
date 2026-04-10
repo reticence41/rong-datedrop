@@ -1,0 +1,1719 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>蓉约 DateDrop 管理后台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base:#0d1117;
+      --bg-surface:#161b22;
+      --bg-card:rgba(255,255,255,.035);
+      --bg-card-hover:rgba(255,255,255,.055);
+      --border:rgba(255,255,255,.08);
+      --border-focus:rgba(129,140,248,.4);
+      --text:#e6edf3;
+      --text-dim:#8b949e;
+      --text-muted:#484f58;
+      --primary:#818cf8;
+      --primary-glow:rgba(129,140,248,.15);
+      --rose:#fb7185;
+      --teal:#2dd4bf;
+      --amber:#fbbf24;
+      --red:#f87171;
+      --emerald:#34d399;
+      --indigo:#6366f1;
+      --slate:#1e293b;
+      --radius:14px;
+      --radius-sm:10px;
+      --shadow:0 4px 24px rgba(0,0,0,.4);
+      --font-display:"Sora","Noto Sans SC",sans-serif;
+      --font-body:"Noto Sans SC","Sora",sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{
+      font-family:var(--font-body);
+      color:var(--text);
+      background:var(--bg-base);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% 0%,rgba(99,102,241,.07),transparent),
+        radial-gradient(ellipse 60% 50% at 80% 100%,rgba(251,113,133,.04),transparent);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar{width:6px;height:6px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:99px;}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18);}
+
+    /* ── top bar ───────────────────────────────────────────── */
+    .top{
+      position:sticky;top:0;z-index:10;
+      background:rgba(13,17,23,.82);
+      backdrop-filter:blur(16px) saturate(1.4);
+      -webkit-backdrop-filter:blur(16px) saturate(1.4);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{
+      width:min(1320px,calc(100% - 32px));
+      margin:0 auto;
+    }
+    .top .wrap{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:12px;min-height:64px;padding:8px 0;
+    }
+    h1{
+      font-family:var(--font-display);
+      font-size:20px;font-weight:800;
+      background:linear-gradient(135deg,var(--primary),var(--rose));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+      letter-spacing:-.02em;
+      white-space:nowrap;
+    }
+    .top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .tabs{
+      display:flex;align-items:center;gap:6px;
+      margin:0 0 0;padding:6px 0 10px;flex-wrap:wrap;
+    }
+    .tab-btn{
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:transparent;
+      color:var(--text-dim);
+      height:34px;padding:0 16px;
+      font-size:13px;font-weight:600;
+      font-family:var(--font-display);
+      cursor:pointer;
+      transition:all .2s ease;
+    }
+    .tab-btn:hover{color:var(--text);border-color:rgba(255,255,255,.16);}
+    .tab-btn.active{
+      border-color:var(--primary);
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 0 16px rgba(99,102,241,.25);
+    }
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+
+    /* ── form elements ───────────────────────────────────── */
+    .input,select,button{
+      height:38px;border-radius:var(--radius-sm);
+      font-size:13px;font-family:var(--font-body);
+      transition:all .2s ease;
+    }
+    .input,select{
+      background:var(--bg-surface);
+      color:var(--text);
+      border:1px solid var(--border);
+      padding:0 12px;min-width:130px;
+      outline:none;
+    }
+    .input:focus,select:focus{
+      border-color:var(--border-focus);
+      box-shadow:0 0 0 3px var(--primary-glow);
+    }
+    .input::placeholder{color:var(--text-muted);}
+    button{
+      background:var(--bg-surface);
+      color:var(--text-dim);
+      border:1px solid var(--border);
+      padding:0 14px;
+      font-weight:600;cursor:pointer;
+    }
+    button:hover{color:var(--text);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06);}
+    button.primary{
+      border-color:var(--indigo);
+      background:linear-gradient(135deg,var(--indigo),#7c3aed);
+      color:#fff;
+      box-shadow:0 2px 12px rgba(99,102,241,.3);
+    }
+    button.primary:hover{box-shadow:0 4px 20px rgba(99,102,241,.45);filter:brightness(1.08);}
+    button.indigo{
+      border-color:var(--primary);
+      background:var(--primary);
+      color:#fff;
+    }
+    button:disabled{opacity:.4;cursor:not-allowed;filter:none;box-shadow:none;}
+
+    /* ── overview metric strip ────────────────────────────── */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:12px;margin:16px 0 14px;
+    }
+    .card{
+      border:1px solid var(--border);
+      background:var(--bg-card);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      border-radius:var(--radius);
+      padding:16px;
+      transition:border-color .25s ease,background .25s ease;
+    }
+    .card:hover{border-color:rgba(255,255,255,.12);background:var(--bg-card-hover);}
+    .metric-label{
+      margin:0 0 8px;color:var(--text-dim);
+      font-size:12px;font-weight:500;letter-spacing:.03em;
+      text-transform:uppercase;
+    }
+    .metric-value{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:28px;font-weight:800;
+      background:linear-gradient(135deg,#fff,rgba(255,255,255,.7));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    /* ── sections ─────────────────────────────────────────── */
+    .sections{display:grid;grid-template-columns:1fr;gap:14px;padding-bottom:28px;}
+    .section-title{
+      margin:0 0 14px;
+      font-family:var(--font-display);
+      font-size:17px;font-weight:700;
+      color:var(--text);
+      letter-spacing:-.01em;
+      display:flex;align-items:center;gap:8px;
+    }
+    .section-title::before{
+      content:"";width:3px;height:18px;
+      border-radius:2px;
+      background:linear-gradient(180deg,var(--primary),var(--rose));
+    }
+    .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+    .hint{color:var(--text-muted);font-size:12px;line-height:1.6;}
+
+    /* ── system status cards ──────────────────────────────── */
+    .sys-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px;}
+    .sys-item{
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      background:var(--bg-card);
+      padding:14px;
+      transition:border-color .2s;
+    }
+    .sys-item:hover{border-color:rgba(255,255,255,.14);}
+    .sys-k{margin:0 0 6px;color:var(--text-dim);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+    .sys-v{margin:0;color:var(--text);font-size:14px;font-weight:500;line-height:1.6;word-break:break-all;}
+
+    /* ── match overview cards (gradient) ──────────────────── */
+    .overview-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0;}
+    .overview-card{
+      border-radius:var(--radius);
+      padding:16px 18px;
+      color:#fff;min-height:100px;
+      display:flex;flex-direction:column;justify-content:space-between;
+      position:relative;overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:transform .2s ease,box-shadow .2s ease;
+    }
+    .overview-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+    .overview-card::after{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 60%);
+      pointer-events:none;
+    }
+    .overview-card.optin{background:linear-gradient(135deg,#4338ca,#6366f1);}
+    .overview-card.success{background:linear-gradient(135deg,#047857,#10b981);}
+    .overview-card.avg{background:linear-gradient(135deg,#9f1239,#e11d48);}
+    .overview-card.unlock{background:linear-gradient(135deg,#b45309,#f59e0b);}
+    .overview-k{margin:0;font-size:12px;opacity:.85;font-weight:500;letter-spacing:.03em;}
+    .overview-v{margin:4px 0;font-family:var(--font-display);font-size:32px;font-weight:800;line-height:1;}
+    .overview-sub{margin:0;font-size:12px;opacity:.8;}
+
+    /* ── match viz ────────────────────────────────────────── */
+    .match-viz-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin:12px 0;}
+    .viz-card{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background:var(--bg-card);
+      backdrop-filter:blur(6px);
+      padding:14px;
+    }
+    .viz-title{
+      margin:0 0 10px;
+      font-family:var(--font-display);
+      font-size:14px;font-weight:700;
+      color:var(--text);
+    }
+    .svg-wrap{
+      width:100%;border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      background:var(--bg-surface);
+      overflow:hidden;position:relative;
+    }
+    .svg-wrap svg{width:100%;height:auto;display:block;}
+    .legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-dim);margin:0 0 8px;}
+    .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
+    .bucket-list{
+      margin-top:8px;border:1px solid var(--border);
+      border-radius:var(--radius-sm);padding:10px;
+      background:var(--bg-surface);
+      font-size:12px;color:var(--text-dim);
+      max-height:140px;overflow:auto;line-height:1.7;
+    }
+    .unmatched-box{
+      margin-top:12px;border:1px solid var(--border);
+      border-radius:var(--radius);background:var(--bg-card);
+      padding:10px;
+    }
+    .unmatched-box table{font-size:12px;}
+    .trend-legend{display:flex;gap:14px;font-size:12px;color:var(--text-dim);margin-top:8px;flex-wrap:wrap;}
+    .trend-legend span::before{content:"";width:16px;height:2px;display:inline-block;margin-right:5px;vertical-align:middle;border-radius:1px;}
+    .trend-legend .l1::before{background:var(--primary);}
+    .trend-legend .l2::before{background:var(--emerald);}
+    .trend-legend .l3::before{background:var(--rose);}
+    .viz-tip{
+      position:fixed;z-index:20;pointer-events:none;
+      background:rgba(30,41,59,.95);
+      color:#fff;font-size:12px;padding:8px 10px;
+      border-radius:8px;display:none;max-width:240px;
+      line-height:1.5;
+      box-shadow:0 8px 24px rgba(0,0,0,.4);
+      border:1px solid rgba(255,255,255,.1);
+      backdrop-filter:blur(8px);
+      white-space:pre-line;
+    }
+
+    /* ── weekly report ────────────────────────────────────── */
+    .report-head{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-bottom:12px;}
+    .report-week{
+      border:1px solid var(--border);border-radius:var(--radius);
+      padding:16px;background:var(--bg-card);
+    }
+    .report-week h3{margin:0 0 6px;font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--primary);}
+    .report-week p{margin:0;color:var(--text-dim);font-size:13px;line-height:1.6;}
+    .core-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0;}
+    .core-card{
+      border-radius:var(--radius);padding:14px;color:#fff;
+      min-height:94px;display:flex;flex-direction:column;justify-content:space-between;
+      box-shadow:var(--shadow);position:relative;overflow:hidden;
+    }
+    .core-card::after{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.1),transparent 60%);
+      pointer-events:none;
+    }
+    .core-card.optin{background:linear-gradient(135deg,#4338ca,#6366f1);}
+    .core-card.matched{background:linear-gradient(135deg,#9f1239,#e11d48);}
+    .core-card.avg{background:linear-gradient(135deg,#047857,#10b981);}
+    .core-card.unlock{background:linear-gradient(135deg,#b45309,#f59e0b);}
+    .core-k{margin:0;font-size:12px;opacity:.85;}
+    .core-v{margin:0;font-family:var(--font-display);font-size:30px;font-weight:800;line-height:1.05;}
+    .dist-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0;}
+    .trend-card{
+      border:1px solid var(--border);border-radius:var(--radius);
+      background:var(--bg-card);padding:12px;
+    }
+    .compare-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;}
+    .compare-item{
+      border:1px solid var(--border);border-radius:var(--radius-sm);
+      background:var(--bg-card);padding:12px;
+    }
+    .compare-k{margin:0 0 6px;color:var(--text-dim);font-size:12px;font-weight:600;}
+    .compare-v{margin:0;font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text);}
+    .up{color:var(--emerald);}
+    .down{color:var(--red);}
+    .flat{color:var(--text-muted);}
+
+    /* ── announcements ────────────────────────────────────── */
+    .announce-form{display:grid;gap:10px;margin-top:10px;}
+    .announce-list{
+      margin-top:12px;border:1px solid var(--border);
+      border-radius:var(--radius-sm);background:var(--bg-surface);
+      max-height:240px;overflow:auto;padding:10px;display:grid;gap:8px;
+    }
+    .announce-item{
+      border:1px solid var(--border);border-radius:var(--radius-sm);
+      padding:12px;background:var(--bg-card);
+      transition:border-color .2s;
+    }
+    .announce-item:hover{border-color:rgba(255,255,255,.14);}
+    .announce-item h4{margin:0 0 4px;font-size:14px;color:var(--text);font-weight:600;}
+    .announce-item p{margin:0;font-size:12px;color:var(--text-dim);line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+    .textarea{
+      width:100%;min-height:90px;border-radius:var(--radius-sm);
+      border:1px solid var(--border);padding:10px 12px;
+      background:var(--bg-surface);color:var(--text);
+      font-size:13px;resize:vertical;font-family:var(--font-body);
+      outline:none;transition:border-color .2s,box-shadow .2s;
+    }
+    .textarea:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px var(--primary-glow);}
+    .textarea::placeholder{color:var(--text-muted);}
+
+    /* ── run output ───────────────────────────────────────── */
+    pre{
+      margin:10px 0 0;padding:14px;
+      border-radius:var(--radius-sm);
+      border:1px solid var(--border);
+      background:var(--bg-surface);
+      color:var(--text-dim);
+      font-size:12px;font-family:"SF Mono","Fira Code",monospace;
+      overflow:auto;max-height:240px;
+      line-height:1.7;
+    }
+    .run-output.warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06);color:var(--amber);}
+    .run-output.ok{border-color:rgba(52,211,153,.2);background:rgba(52,211,153,.05);color:var(--emerald);}
+
+    /* ── tables ───────────────────────────────────────────── */
+    table{
+      width:100%;border-collapse:collapse;
+      font-size:13px;background:var(--bg-surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);overflow:hidden;
+    }
+    th,td{
+      padding:11px 10px;
+      border-bottom:1px solid var(--border);
+      text-align:left;vertical-align:top;
+    }
+    th{
+      color:var(--text-dim);
+      background:rgba(255,255,255,.03);
+      font-weight:600;font-size:11px;
+      letter-spacing:.04em;text-transform:uppercase;
+      position:sticky;top:64px;z-index:2;
+    }
+    tr:last-child td{border-bottom:0;}
+    tr:hover td{background:rgba(255,255,255,.02);}
+    .tag{
+      display:inline-flex;align-items:center;
+      border-radius:999px;padding:3px 10px;
+      font-size:11px;font-weight:600;letter-spacing:.02em;
+    }
+    .tag.ok{color:var(--emerald);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);}
+    .tag.wait{color:var(--amber);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);}
+    .tag.male{color:#93c5fd;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);}
+    .tag.female{color:#f9a8d4;background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.2);}
+
+    /* ── pagination & status ──────────────────────────────── */
+    .pager{margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .status{margin-top:10px;color:var(--text-dim);font-size:12px;}
+    .status.err{color:var(--red);font-weight:600;}
+    .status.warn{color:var(--amber);font-weight:600;}
+
+    /* ── responsive ───────────────────────────────────────── */
+    @media(max-width:1080px){
+      .grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+      .overview-cards{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .match-viz-grid{grid-template-columns:1fr;}
+    }
+    @media(max-width:768px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      th{top:58px;}
+      .sys-grid,.core-grid,.dist-grid,.compare-grid{grid-template-columns:1fr;}
+      .overview-cards{grid-template-columns:1fr;}
+      .report-head{grid-template-columns:1fr;}
+    }
+    @media(max-width:480px){
+      .grid{grid-template-columns:1fr;}
+      .top .wrap{flex-direction:column;align-items:stretch;}
+      .top-actions{width:100%;}
+      .input,select{width:100%;min-width:0;}
+      button{width:100%;}
+    }
+    @media print{
+      .top,#opsPanel,#statusText,#vizTip,.tabs,.controls button,#weeklyRefreshBtn,#weeklyPrintBtn{display:none !important;}
+      body{background:#fff;color:#1a1a1a;}
+      .wrap{width:100%;}
+      #weeklyPanel{display:block !important;}
+      .card,.viz-card,.report-week,.core-card,.overview-card,.compare-item,.sys-item{
+        border-color:#ddd;background:#fff;color:#1a1a1a;box-shadow:none;backdrop-filter:none;
+      }
+      .core-card,.overview-card{color:#fff;}
+    }
+
+    /* ── entrance animation ───────────────────────────────── */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+    .grid .card,.overview-card,.sys-item,.viz-card,.report-week,.core-card,.trend-card,.compare-item{
+      animation:fadeUp .4s ease both;
+    }
+    .grid .card:nth-child(1){animation-delay:.02s;}
+    .grid .card:nth-child(2){animation-delay:.06s;}
+    .grid .card:nth-child(3){animation-delay:.10s;}
+    .grid .card:nth-child(4){animation-delay:.14s;}
+    .grid .card:nth-child(5){animation-delay:.18s;}
+    .overview-card:nth-child(1){animation-delay:.04s;}
+    .overview-card:nth-child(2){animation-delay:.08s;}
+    .overview-card:nth-child(3){animation-delay:.12s;}
+    .overview-card:nth-child(4){animation-delay:.16s;}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <h1>蓉约 DateDrop 管理后台</h1>
+      <div class="top-actions">
+        <input id="adminKey" class="input" type="password" placeholder="输入 x-admin-key" aria-label="管理员密钥" />
+        <button id="saveKeyBtn" class="indigo" type="button" aria-label="保存管理员密钥">保存密钥</button>
+        <button id="refreshAllBtn" class="primary" type="button" aria-label="刷新所有数据">刷新全部</button>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="tabs" role="tablist" aria-label="后台功能标签">
+        <button id="tabOpsBtn" class="tab-btn active" type="button" role="tab" aria-selected="true" aria-label="运营总览">运营总览</button>
+        <button id="tabWeeklyBtn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-label="周报">周报</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="opsPanel" class="tab-panel active" role="tabpanel" aria-labelledby="tabOpsBtn">
+    <section class="grid" aria-label="概览面板">
+      <article class="card"><p class="metric-label">总注册用户数</p><p id="mTotalUsers" class="metric-value">-</p></article>
+      <article class="card"><p class="metric-label">本周入池人数</p><p id="mOptIn" class="metric-value">-</p></article>
+      <article class="card"><p class="metric-label">历史总匹配对数</p><p id="mTotalPairs" class="metric-value">-</p></article>
+      <article class="card"><p class="metric-label">本周匹配成功对数</p><p id="mWeekPairs" class="metric-value">-</p></article>
+      <article class="card"><p class="metric-label">联系方式解锁率</p><p id="mUnlockRate" class="metric-value">-</p></article>
+    </section>
+
+    <section class="sections">
+      <article class="card">
+        <h2 class="section-title">系统状态</h2>
+        <div class="controls">
+          <button id="refreshSystemBtn" type="button" aria-label="刷新系统状态">刷新系统状态</button>
+        </div>
+        <div class="sys-grid">
+          <div class="sys-item">
+            <p class="sys-k">调度器状态</p>
+            <p id="sysSchedulerRunning" class="sys-v">-</p>
+          </div>
+          <div class="sys-item">
+            <p class="sys-k">上次匹配时间</p>
+            <p id="sysLastMatchAt" class="sys-v">-</p>
+          </div>
+          <div class="sys-item">
+            <p class="sys-k">下次预计匹配时间</p>
+            <p id="sysNextMatchAt" class="sys-v">-</p>
+          </div>
+          <div class="sys-item">
+            <p class="sys-k">邮件队列待发</p>
+            <p id="sysMailPending" class="sys-v">-</p>
+          </div>
+          <div class="sys-item">
+            <p class="sys-k">邮件队列已发</p>
+            <p id="sysMailSent" class="sys-v">-</p>
+          </div>
+          <div class="sys-item">
+            <p class="sys-k">邮件队列失败</p>
+            <p id="sysMailFailed" class="sys-v">-</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="section-title">匹配任务控制</h2>
+        <div class="controls">
+          <input id="runWeekKey" class="input" type="text" placeholder="例如 2026-W14" aria-label="执行匹配周次" />
+          <button id="runMatchBtn" class="primary" type="button" aria-label="执行本周匹配">执行本周匹配</button>
+          <button id="refreshRunsBtn" type="button" aria-label="刷新匹配任务记录">刷新记录</button>
+        </div>
+        <div class="hint">执行后会调用 `/api/admin/run-match`，并自动将匹配通知入队。</div>
+        <pre id="runResult" class="run-output">等待执行任务...</pre>
+        <div style="margin-top:12px; overflow:auto;">
+          <table aria-label="历史匹配任务记录">
+            <thead>
+              <tr>
+                <th>周次</th>
+                <th>执行时间</th>
+                <th>候选人数</th>
+                <th>匹配对数</th>
+              </tr>
+            </thead>
+            <tbody id="runTableBody">
+              <tr><td colspan="4">暂无数据</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="section-title">用户列表</h2>
+        <div class="controls">
+          <input id="userSearch" class="input" type="text" placeholder="按学号/姓名搜索" aria-label="用户搜索关键字" />
+          <select id="userCampus" aria-label="按校区筛选">
+            <option value="">全部校区</option>
+            <option value="望江">望江</option>
+            <option value="江安">江安</option>
+            <option value="华西">华西</option>
+            <option value="其他">其他</option>
+          </select>
+          <select id="userGrade" aria-label="按年级筛选">
+            <option value="">全部年级</option>
+            <option value="大一">大一</option>
+            <option value="大二">大二</option>
+            <option value="大三">大三</option>
+            <option value="大四及以上">大四及以上</option>
+            <option value="研一及以上">研一及以上</option>
+            <option value="其他">其他</option>
+          </select>
+          <button id="userFilterBtn" type="button" aria-label="查询用户列表">查询</button>
+          <button id="exportUsersBtn" type="button" aria-label="导出用户CSV">导出用户 CSV</button>
+        </div>
+        <div style="overflow:auto;">
+          <table aria-label="用户列表">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>邮箱</th>
+                <th>校区</th>
+                <th>年级</th>
+                <th>注册时间</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody">
+              <tr><td colspan="7">暂无数据</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button id="userPrevBtn" type="button" aria-label="上一页">上一页</button>
+          <button id="userNextBtn" type="button" aria-label="下一页">下一页</button>
+          <span id="userPagerText" class="hint">第 1 页</span>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="section-title">匹配记录</h2>
+        <div class="controls">
+          <input id="matchWeekKey" class="input" type="text" placeholder="周次，例如 2026-W14" aria-label="匹配记录周次" />
+          <button id="matchQueryBtn" type="button" aria-label="查询匹配记录">查询</button>
+          <button id="exportMatchesBtn" type="button" aria-label="导出匹配记录CSV">导出匹配 CSV</button>
+        </div>
+        <section class="overview-cards" aria-label="匹配概览统计">
+          <article class="overview-card optin">
+            <p class="overview-k">本周入池人数</p>
+            <p id="ovOptIn" class="overview-v">-</p>
+            <p id="ovOptInDelta" class="overview-sub">较上周：-</p>
+          </article>
+          <article class="overview-card success">
+            <p class="overview-k">匹配成功率</p>
+            <p id="ovSuccessRate" class="overview-v">-</p>
+            <p id="ovMatchedPairs" class="overview-sub">匹配对数：-</p>
+          </article>
+          <article class="overview-card avg">
+            <p class="overview-k">平均匹配分</p>
+            <p id="ovAvgScore" class="overview-v">-</p>
+            <p id="ovScoreRange" class="overview-sub">最高/最低：- / -</p>
+          </article>
+          <article class="overview-card unlock">
+            <p class="overview-k">联系方式解锁率</p>
+            <p id="ovUnlockRate" class="overview-v">-</p>
+            <p id="ovUnlockedPairs" class="overview-sub">解锁对数：-</p>
+          </article>
+        </section>
+
+        <section class="match-viz-grid">
+          <article class="viz-card">
+            <h3 class="viz-title">配对关系图</h3>
+            <div class="legend">
+              <span><i style="background:#f9a8d4;"></i>女生</span>
+              <span><i style="background:#93c5fd;"></i>男生</span>
+              <span><i style="background:#64748b;"></i>未匹配</span>
+            </div>
+            <div class="svg-wrap">
+              <svg id="pairGraphSvg" viewBox="0 0 980 420" preserveAspectRatio="xMidYMid meet" aria-label="配对关系图"></svg>
+            </div>
+          </article>
+          <article class="viz-card">
+            <h3 class="viz-title">匹配分数分布</h3>
+            <div class="svg-wrap">
+              <svg id="scoreHistSvg" viewBox="0 0 560 260" preserveAspectRatio="xMidYMid meet" aria-label="分数直方图"></svg>
+            </div>
+            <div id="scoreBucketDetail" class="bucket-list">点击柱子可查看该分数区间的配对列表。</div>
+          </article>
+        </section>
+
+        <section class="viz-card" style="margin-bottom:12px;">
+          <h3 class="viz-title">最近 12 周趋势</h3>
+          <div class="svg-wrap">
+            <svg id="trendSvg" viewBox="0 0 960 300" preserveAspectRatio="xMidYMid meet" aria-label="入池匹配解锁趋势图"></svg>
+          </div>
+          <div class="trend-legend">
+            <span class="l1">入池人数</span>
+            <span class="l2">匹配对数</span>
+            <span class="l3">解锁对数</span>
+          </div>
+        </section>
+
+        <section class="unmatched-box" aria-label="未匹配用户列表">
+          <h3 class="viz-title">未匹配用户（重点关注）</h3>
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>姓名</th>
+                  <th>性别</th>
+                  <th>校区 / 年级</th>
+                  <th>入池时间</th>
+                  <th>未匹配原因</th>
+                </tr>
+              </thead>
+              <tbody id="unmatchedTableBody">
+                <tr><td colspan="5">暂无数据</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div style="overflow:auto;margin-top:12px;">
+          <table aria-label="匹配记录列表">
+            <thead>
+              <tr>
+                <th>匹配ID</th>
+                <th>周次</th>
+                <th>用户A</th>
+                <th>用户B</th>
+                <th>匹配分</th>
+                <th>联系方式解锁</th>
+              </tr>
+            </thead>
+            <tbody id="matchTableBody">
+              <tr><td colspan="6">暂无数据</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="section-title">公告发布</h2>
+        <div class="announce-form">
+          <input id="annTitleInput" class="input" type="text" placeholder="公告标题" aria-label="公告标题" />
+          <textarea id="annContentInput" class="textarea" placeholder="公告正文，支持 **加粗** 语法" aria-label="公告正文"></textarea>
+          <div class="controls" style="margin:0;">
+            <button id="annPublishBtn" class="primary" type="button" aria-label="发布公告">发布公告</button>
+            <button id="annRefreshBtn" type="button" aria-label="刷新公告列表">刷新公告</button>
+          </div>
+        </div>
+        <div id="annList" class="announce-list">暂无公告数据</div>
+      </article>
+
+      <article class="card">
+        <h2 class="section-title">反馈统计</h2>
+        <div class="controls">
+          <input id="feedbackWeekInput" class="input" type="text" placeholder="周次（可选）例如 2026-W14" aria-label="反馈统计周次" />
+          <button id="feedbackRefreshBtn" type="button" aria-label="刷新反馈统计">刷新反馈统计</button>
+        </div>
+        <div class="sys-grid">
+          <div class="sys-item">
+            <p class="sys-k">反馈总数</p>
+            <p id="fbTotal" class="sys-v">-</p>
+          </div>
+          <div class="sys-item">
+            <p class="sys-k">平均评分</p>
+            <p id="fbAvg" class="sys-v">-</p>
+          </div>
+          <div class="sys-item">
+            <p class="sys-k">已联系比例</p>
+            <p id="fbContactRate" class="sys-v">-</p>
+          </div>
+        </div>
+        <pre id="fbBreakdown">评分分布：-</pre>
+      </article>
+    </section>
+    </section>
+
+    <section id="weeklyPanel" class="tab-panel" role="tabpanel" aria-labelledby="tabWeeklyBtn">
+      <article class="card">
+        <h2 class="section-title">周报</h2>
+        <div class="controls">
+          <input id="weeklyWeekKey" class="input" type="text" placeholder="周次，例如 2026-W14" aria-label="周报周次" />
+          <button id="weeklyRefreshBtn" class="primary" type="button" aria-label="刷新周报">刷新周报</button>
+          <button id="weeklyPrintBtn" type="button" aria-label="打印周报">打印周报</button>
+        </div>
+        <div class="report-head">
+          <div class="report-week">
+            <h3 id="rpWeek">-</h3>
+            <p id="rpPeriod">-</p>
+          </div>
+          <div class="report-week">
+            <h3 id="rpTopReasonsTitle" style="font-size:18px;">本周高频匹配理由</h3>
+            <p id="rpTopReasons">-</p>
+          </div>
+        </div>
+        <section class="core-grid">
+          <article class="core-card optin"><p class="core-k">本周入池人数</p><p id="rpOptIn" class="core-v">-</p></article>
+          <article class="core-card matched"><p class="core-k">匹配成功对数</p><p id="rpMatched" class="core-v">-</p></article>
+          <article class="core-card avg"><p class="core-k">平均匹配分</p><p id="rpAvgScore" class="core-v">-</p></article>
+          <article class="core-card unlock"><p class="core-k">联系方式解锁率</p><p id="rpUnlockRate" class="core-v">-</p></article>
+        </section>
+        <section class="dist-grid">
+          <article class="trend-card">
+            <h3 class="viz-title">校区分布</h3>
+            <div class="svg-wrap"><svg id="rpCampusSvg" viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet" aria-label="校区分布图"></svg></div>
+          </article>
+          <article class="trend-card">
+            <h3 class="viz-title">年级分布</h3>
+            <div class="svg-wrap"><svg id="rpGradeSvg" viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet" aria-label="年级分布图"></svg></div>
+          </article>
+          <article class="trend-card">
+            <h3 class="viz-title">性别分布</h3>
+            <div class="svg-wrap"><svg id="rpGenderSvg" viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet" aria-label="性别分布图"></svg></div>
+          </article>
+        </section>
+        <section class="compare-grid">
+          <article class="compare-item">
+            <p class="compare-k">入池变化（较上周）</p>
+            <p id="rpOptInDelta" class="compare-v">-</p>
+          </article>
+          <article class="compare-item">
+            <p class="compare-k">配对变化（较上周）</p>
+            <p id="rpMatchedDelta" class="compare-v">-</p>
+          </article>
+          <article class="compare-item">
+            <p class="compare-k">平均分变化（较上周）</p>
+            <p id="rpScoreDelta" class="compare-v">-</p>
+          </article>
+        </section>
+      </article>
+    </section>
+
+    <p id="statusText" class="status">就绪</p>
+  </main>
+  <div id="vizTip" class="viz-tip" role="status" aria-live="polite"></div>
+
+  <script>
+    const state = {
+      adminKey: sessionStorage.getItem("scu_admin_key") || "",
+      usersPage: 1,
+      usersLimit: 20,
+      usersTotal: 0,
+      activeWeekKey: "",
+      stats: null,
+      selectedWeekKey: "",
+      matchRows: [],
+      unmatchedRows: [],
+      trendRows: [],
+      histogramBuckets: [],
+      weeklyReport: null,
+      activeTab: "ops"
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(message, level = "ok") {
+      const el = $("statusText");
+      if (!el) return;
+      if (level === "err") {
+        el.className = "status err";
+      } else if (level === "warn") {
+        el.className = "status warn";
+      } else {
+        el.className = "status";
+      }
+      el.textContent = String(message || "");
+    }
+
+    function getAdminKey() {
+      const raw = String($("adminKey").value || state.adminKey || "").trim();
+      return raw;
+    }
+
+    function saveAdminKey() {
+      state.adminKey = getAdminKey();
+      sessionStorage.setItem("scu_admin_key", state.adminKey);
+      setStatus("管理员密钥已保存");
+    }
+
+    function withHeaders(extra = {}) {
+      const key = getAdminKey();
+      if (!key) {
+        throw new Error("请先输入管理员密钥");
+      }
+      return {
+        "x-admin-key": key,
+        ...extra
+      };
+    }
+
+    async function adminApi(url, options = {}) {
+      const init = { ...options, credentials: "include" };
+      const headers = { ...(init.headers || {}) };
+      headers["x-admin-key"] = getAdminKey();
+      if (!headers["x-admin-key"]) {
+        throw new Error("请先输入管理员密钥");
+      }
+      if (init.body && !headers["Content-Type"]) {
+        headers["Content-Type"] = "application/json";
+      }
+      init.headers = headers;
+      const resp = await fetch(url, init);
+      if (!resp.ok) {
+        let msg = `HTTP_${resp.status}`;
+        try {
+          const data = await resp.json();
+          if (data && data.error) msg = data.error;
+        } catch (_) {}
+        throw new Error(msg);
+      }
+      return resp.json();
+    }
+
+    async function downloadCsv(url, filename) {
+      const resp = await fetch(url, { headers: withHeaders() });
+      if (!resp.ok) {
+        throw new Error(`下载失败 HTTP_${resp.status}`);
+      }
+      const blob = await resp.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function formatDate(raw) {
+      if (!raw) return "-";
+      const d = new Date(raw);
+      if (Number.isNaN(d.getTime())) return String(raw);
+      return d.toLocaleString();
+    }
+
+    function fmtNum(n) {
+      return Number(n || 0).toLocaleString();
+    }
+
+    function fmtPct(v) {
+      return `${Number(v || 0).toFixed(1)}%`;
+    }
+
+    function esc(text) {
+      return String(text ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function genderTag(gender) {
+      const g = String(gender || "");
+      if (g.includes("男")) return '<span class="tag male">男生</span>';
+      if (g.includes("女")) return '<span class="tag female">女生</span>';
+      return '<span class="tag wait">未知</span>';
+    }
+
+    function showTip(evt, text) {
+      const tip = $("vizTip");
+      if (!tip) return;
+      tip.textContent = text;
+      tip.style.display = "block";
+      tip.style.left = `${evt.clientX + 12}px`;
+      tip.style.top = `${evt.clientY + 12}px`;
+    }
+
+    function hideTip() {
+      const tip = $("vizTip");
+      if (!tip) return;
+      tip.style.display = "none";
+    }
+
+    function switchTab(tab) {
+      state.activeTab = tab === "weekly" ? "weekly" : "ops";
+      const opsActive = state.activeTab === "ops";
+      $("opsPanel").classList.toggle("active", opsActive);
+      $("weeklyPanel").classList.toggle("active", !opsActive);
+      $("tabOpsBtn").classList.toggle("active", opsActive);
+      $("tabWeeklyBtn").classList.toggle("active", !opsActive);
+      $("tabOpsBtn").setAttribute("aria-selected", opsActive ? "true" : "false");
+      $("tabWeeklyBtn").setAttribute("aria-selected", opsActive ? "false" : "true");
+    }
+
+    function setDeltaText(elId, value, digits = 0) {
+      const el = $(elId);
+      if (!el) return;
+      const n = Number(value || 0);
+      const sign = n > 0 ? "↑" : n < 0 ? "↓" : "→";
+      const abs = Math.abs(n);
+      const text = digits > 0 ? abs.toFixed(digits) : abs.toLocaleString();
+      el.classList.remove("up", "down", "flat");
+      el.classList.add(n > 0 ? "up" : n < 0 ? "down" : "flat");
+      el.textContent = `${sign} ${text}`;
+    }
+
+    function renderDistributionChart(svgId, distribution = {}) {
+      const svg = $(svgId);
+      if (!svg) return;
+      const entries = Object.entries(distribution || {}).filter((item) => Number(item[1] || 0) > 0);
+      if (!entries.length) {
+        svg.innerHTML = `<rect width="360" height="240" fill="#161b22"/><text x="20" y="120" fill="#8b949e" font-size="14" font-family="Sora,sans-serif">暂无数据</text>`;
+        return;
+      }
+      const sorted = entries.sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0));
+      const max = Math.max(...sorted.map((item) => Number(item[1] || 0)));
+      const left = 100;
+      const top = 22;
+      const rowH = 36;
+      const barH = 20;
+      const chartW = 220;
+      const palette = ["#818cf8", "#34d399", "#fb7185", "#fbbf24", "#38bdf8", "#a78bfa"];
+      const rows = sorted.map((item, idx) => {
+        const label = item[0];
+        const value = Number(item[1] || 0);
+        const width = max > 0 ? (value / max) * chartW : 0;
+        const y = top + idx * rowH;
+        const color = palette[idx % palette.length];
+        return `
+          <text x="12" y="${y + 14}" fill="#8b949e" font-size="12" font-family="Noto Sans SC,sans-serif">${esc(label)}</text>
+          <rect x="${left}" y="${y}" width="${width.toFixed(2)}" height="${barH}" rx="4" fill="${color}" opacity="0.85">
+            <animate attributeName="width" from="0" to="${width.toFixed(2)}" dur="0.6s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1"/>
+          </rect>
+          <text x="${(left + width + 8).toFixed(2)}" y="${y + 14}" fill="#e6edf3" font-size="12" font-family="Sora,sans-serif" font-weight="600">${value}</text>
+        `;
+      }).join("");
+      svg.innerHTML = `
+        <rect x="0" y="0" width="360" height="240" fill="#161b22"></rect>
+        ${rows}
+      `;
+    }
+
+    function renderWeeklyReport(data) {
+      state.weeklyReport = data;
+      $("rpWeek").textContent = data.weekKey || "-";
+      $("rpPeriod").textContent = data.period || "-";
+      $("rpTopReasons").textContent = (data.topReasons || []).length ? data.topReasons.join(" / ") : "暂无高频理由";
+      $("rpOptIn").textContent = fmtNum(data.optInCount);
+      $("rpMatched").textContent = fmtNum(data.matchedPairs);
+      $("rpAvgScore").textContent = Number(data.avgScore || 0).toFixed(1);
+      $("rpUnlockRate").textContent = String(data.unlockRate || "0%");
+      setDeltaText("rpOptInDelta", data.comparedToLastWeek?.optInChange || 0, 0);
+      setDeltaText("rpMatchedDelta", data.comparedToLastWeek?.matchedChange || 0, 0);
+      setDeltaText("rpScoreDelta", data.comparedToLastWeek?.scoreChange || 0, 1);
+      renderDistributionChart("rpCampusSvg", data.campusDistribution || {});
+      renderDistributionChart("rpGradeSvg", data.gradeDistribution || {});
+      renderDistributionChart("rpGenderSvg", data.genderDistribution || {});
+    }
+
+    async function loadWeeklyReport() {
+      const wk = String($("weeklyWeekKey").value || $("matchWeekKey").value || state.activeWeekKey || "").trim();
+      const data = await adminApi(`/api/admin/weekly-report?weekKey=${encodeURIComponent(wk)}`);
+      $("weeklyWeekKey").value = data.weekKey || wk;
+      renderWeeklyReport(data);
+    }
+
+    function renderAnnouncementList(items = []) {
+      const box = $("annList");
+      if (!box) return;
+      if (!items.length) {
+        box.textContent = "暂无公告数据";
+        return;
+      }
+      box.innerHTML = items.map((item) => `
+        <article class="announce-item">
+          <h4>${esc(item.title || "-")} ${item.isActive ? '<span class="tag ok">启用</span>' : '<span class="tag wait">停用</span>'}</h4>
+          <p>${esc(item.content || "")}</p>
+          <p style="margin-top:6px;color:var(--text-muted);">${formatDate(item.createdAt)}</p>
+        </article>
+      `).join("");
+    }
+
+    async function loadAnnouncements() {
+      const data = await adminApi("/api/admin/announcements");
+      renderAnnouncementList(data.items || []);
+    }
+
+    async function publishAnnouncement() {
+      const title = String($("annTitleInput").value || "").trim();
+      const content = String($("annContentInput").value || "").trim();
+      if (!title || !content) {
+        throw new Error("请填写公告标题和正文");
+      }
+      const btn = $("annPublishBtn");
+      const old = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "发布中...";
+      try {
+        await adminApi("/api/admin/announcements", {
+          method: "POST",
+          body: JSON.stringify({
+            title,
+            content,
+            isActive: true
+          })
+        });
+        $("annTitleInput").value = "";
+        $("annContentInput").value = "";
+        await loadAnnouncements();
+        setStatus("公告发布成功");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = old;
+      }
+    }
+
+    function renderFeedbackStats(data) {
+      $("fbTotal").textContent = fmtNum(data.totalFeedbacks);
+      $("fbAvg").textContent = Number(data.avgRating || 0).toFixed(2);
+      $("fbContactRate").textContent = `${(Number(data.contactedRate || 0) * 100).toFixed(1)}%`;
+      const rb = data.ratingBreakdown || {};
+      $("fbBreakdown").textContent = [
+        "评分分布：",
+        `1星 ${rb[1] || 0} 条`,
+        `2星 ${rb[2] || 0} 条`,
+        `3星 ${rb[3] || 0} 条`,
+        `4星 ${rb[4] || 0} 条`,
+        `5星 ${rb[5] || 0} 条`
+      ].join(" | ");
+    }
+
+    async function loadFeedbackStats() {
+      const wk = String($("feedbackWeekInput").value || "").trim();
+      const suffix = wk ? `?weekKey=${encodeURIComponent(wk)}` : "";
+      const data = await adminApi(`/api/admin/feedback-stats${suffix}`);
+      renderFeedbackStats(data);
+    }
+
+    function setRunResult(text, level = "ok") {
+      const el = $("runResult");
+      if (!el) return;
+      el.className = "run-output";
+      if (level === "warn") el.classList.add("warn");
+      if (level === "ok") el.classList.add("ok");
+      el.textContent = String(text || "");
+    }
+
+    async function loadStats() {
+      const data = await adminApi("/api/admin/stats");
+      state.stats = data;
+      $("mTotalUsers").textContent = fmtNum(data.totalUsers);
+      $("mOptIn").textContent = fmtNum(data.thisWeekOptIns);
+      $("mTotalPairs").textContent = fmtNum(data.historicalTotalMatchPairs);
+      $("mWeekPairs").textContent = fmtNum(data.thisWeekMatchedPairs);
+      const rate = Number(data.unlockRate || 0);
+      $("mUnlockRate").textContent = `${(rate * 100).toFixed(1)}%`;
+      state.activeWeekKey = String(data.weekKey || "");
+      if (!$("runWeekKey").value) $("runWeekKey").value = state.activeWeekKey;
+      if (!$("matchWeekKey").value) $("matchWeekKey").value = state.activeWeekKey;
+      if (!$("weeklyWeekKey").value) $("weeklyWeekKey").value = state.activeWeekKey;
+      if (!$("feedbackWeekInput").value) $("feedbackWeekInput").value = state.activeWeekKey;
+    }
+
+    async function loadMatchRuns() {
+      const data = await adminApi("/api/admin/match-runs");
+      const rows = data.items || [];
+      const body = $("runTableBody");
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="4">暂无记录</td></tr>`;
+        return;
+      }
+      body.innerHTML = rows.map((item) => `
+        <tr>
+          <td>${item.weekKey || "-"}</td>
+          <td>${formatDate(item.runAt)}</td>
+          <td>${fmtNum(item.candidateCount)}</td>
+          <td>${fmtNum(item.matchedCount)}</td>
+        </tr>
+      `).join("");
+      if (!state.activeWeekKey && rows[0] && rows[0].weekKey) {
+        state.activeWeekKey = rows[0].weekKey;
+      }
+    }
+
+    async function loadSchedulerStatus() {
+      const data = await adminApi("/api/admin/scheduler-status");
+      $("sysSchedulerRunning").textContent = data.running ? "运行中" : "未运行";
+      $("sysLastMatchAt").textContent = data.lastMatchTime ? formatDate(data.lastMatchTime) : "-";
+      $("sysNextMatchAt").textContent = data.nextMatchTime ? formatDate(data.nextMatchTime) : "-";
+    }
+
+    async function loadMailQueueStats() {
+      const data = await adminApi("/api/admin/mail-queue-stats");
+      $("sysMailPending").textContent = fmtNum(data.pending);
+      $("sysMailSent").textContent = fmtNum(data.sent);
+      $("sysMailFailed").textContent = fmtNum(data.failed);
+    }
+
+    async function runMatchTask() {
+      const wk = String($("runWeekKey").value || "").trim();
+      const btn = $("runMatchBtn");
+      const old = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "执行中...";
+      setRunResult("匹配任务执行中，请稍候...", "ok");
+      try {
+        const data = await adminApi("/api/admin/run-match", {
+          method: "POST",
+          body: JSON.stringify({ weekKey: wk || undefined })
+        });
+        const summary = data.summary || {};
+        const lines = [
+          `执行完成：${summary.weekKey || data.result?.weekKey || wk || "-"}`,
+          `参与人数：${fmtNum(summary.participants)}`,
+          `候选配对数：${fmtNum(summary.candidates)}`,
+          `低于阈值未入候选人数：${fmtNum(summary.belowThresholdCount)}`,
+          `匹配成功对数：${fmtNum(summary.matchedPairs)}`,
+          `未匹配人数：${fmtNum(summary.unmatchedUsers)}`,
+          `匹配分（最高/最低/平均）：${summary.score?.highest ?? 0} / ${summary.score?.lowest ?? 0} / ${summary.score?.average ?? 0}`,
+          `结果通知入队：${fmtNum(data.queueResult?.queued)}`,
+          `管理员摘要邮件入队：${fmtNum(data.adminNotify?.queued)}`,
+          `执行耗时：${fmtNum(data.result?.durationMs)} ms`
+        ];
+        if (Number(summary.matchedPairs || 0) === 0) {
+          lines.push("");
+          lines.push("⚠ 本次 0 对匹配成功，可能原因：");
+          lines.push("1. 本周入池人数不足 2 人");
+          lines.push("2. 性别/意向筛选后无可配对对象");
+          lines.push("3. dealbreaker 规则过滤过多");
+          setRunResult(lines.join("\n"), "warn");
+          setStatus("匹配已执行，但 0 对成功，请检查入池和筛选条件", "warn");
+        } else {
+          setRunResult(lines.join("\n"), "ok");
+          setStatus("匹配任务执行成功");
+        }
+        $("matchWeekKey").value = data.result && data.result.weekKey ? data.result.weekKey : wk;
+        await refreshAll();
+      } catch (err) {
+        setRunResult(`执行失败：${err.message}`, "warn");
+        setStatus(`匹配任务执行失败：${err.message}`, "err");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = old;
+      }
+    }
+
+    async function loadUsers() {
+      const search = String($("userSearch").value || "").trim();
+      const campus = String($("userCampus").value || "").trim();
+      const grade = String($("userGrade").value || "").trim();
+      const data = await adminApi(
+        `/api/admin/users?page=${state.usersPage}&limit=${state.usersLimit}&search=${encodeURIComponent(search)}&campus=${encodeURIComponent(campus)}&grade=${encodeURIComponent(grade)}`
+      );
+      state.usersTotal = Number(data.total || 0);
+      const body = $("userTableBody");
+      if (!data.items || !data.items.length) {
+        body.innerHTML = `<tr><td colspan="7">暂无用户</td></tr>`;
+      } else {
+        body.innerHTML = data.items.map((u) => `
+          <tr>
+            <td>${u.id}</td>
+            <td>${u.studentId || "-"}</td>
+            <td>${u.name || "-"}</td>
+            <td>${u.email || "-"}</td>
+            <td>${u.campus || "-"}</td>
+            <td>${u.grade || "-"}</td>
+            <td>${formatDate(u.createdAt)}</td>
+          </tr>
+        `).join("");
+      }
+      const totalPages = Math.max(1, Math.ceil(state.usersTotal / state.usersLimit));
+      $("userPagerText").textContent = `第 ${state.usersPage} / ${totalPages} 页，共 ${state.usersTotal} 条`;
+      $("userPrevBtn").disabled = state.usersPage <= 1;
+      $("userNextBtn").disabled = state.usersPage >= totalPages;
+    }
+
+    function renderMatchTable() {
+      const rows = state.matchRows || [];
+      const body = $("matchTableBody");
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="6">该周暂无匹配记录</td></tr>`;
+        return;
+      }
+      body.innerHTML = rows.map((row) => `
+        <tr>
+          <td>${row.id}</td>
+          <td>${esc(row.weekKey || "-")}</td>
+          <td>${esc(row.userA?.name || "-")}（${esc(row.userA?.grade || "-")} · ${esc(row.userA?.campus || "-")}）</td>
+          <td>${esc(row.userB?.name || "-")}（${esc(row.userB?.grade || "-")} · ${esc(row.userB?.campus || "-")}）</td>
+          <td>${Number(row.score || 0).toFixed(2)}</td>
+          <td>${row.contactUnlocked ? '<span class="tag ok">已解锁</span>' : '<span class="tag wait">未解锁</span>'}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderOverviewCards(weekStats) {
+      const rows = state.matchRows || [];
+      const trend = state.trendRows || [];
+      const currentOptIn = Number(weekStats?.thisWeekOptIns || 0);
+      const matchedPairs = Number(weekStats?.thisWeekMatchedPairs || 0);
+      const unlockedPairs = Number(weekStats?.unlockedPairs || 0);
+      const successRate = currentOptIn > 0 ? (matchedPairs * 2 / currentOptIn) * 100 : 0;
+      const unlockRate = Number(weekStats?.unlockRate || 0) * 100;
+      const scores = rows.map((x) => Number(x.score || 0));
+      const avgScore = scores.length ? scores.reduce((sum, x) => sum + x, 0) / scores.length : 0;
+      const maxScore = scores.length ? Math.max(...scores) : 0;
+      const minScore = scores.length ? Math.min(...scores) : 0;
+
+      const idx = trend.findIndex((x) => x.weekKey === state.selectedWeekKey);
+      const prev = idx > 0 ? trend[idx - 1] : null;
+      const delta = currentOptIn - Number(prev?.optIn || 0);
+      const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "→";
+      const deltaText = prev ? `${arrow} ${Math.abs(delta)} 人` : "无上周数据";
+
+      $("ovOptIn").textContent = fmtNum(currentOptIn);
+      $("ovOptInDelta").textContent = `较上周：${deltaText}`;
+      $("ovSuccessRate").textContent = fmtPct(successRate);
+      $("ovMatchedPairs").textContent = `匹配对数：${fmtNum(matchedPairs)}`;
+      $("ovAvgScore").textContent = Number(avgScore).toFixed(1);
+      $("ovScoreRange").textContent = `最高/最低：${maxScore.toFixed(1)} / ${minScore.toFixed(1)}`;
+      $("ovUnlockRate").textContent = fmtPct(unlockRate);
+      $("ovUnlockedPairs").textContent = `解锁对数：${fmtNum(unlockedPairs)}`;
+    }
+
+    function edgeColor(score) {
+      const v = Math.max(0, Math.min(100, Number(score || 0)));
+      if (v >= 80) return "#34d399";
+      if (v >= 60) return "#38bdf8";
+      if (v >= 40) return "#fbbf24";
+      return "#f87171";
+    }
+
+    function nodeColor(gender, unmatched = false) {
+      if (unmatched) return "#64748b";
+      if (String(gender || "").includes("男")) return "#93c5fd";
+      if (String(gender || "").includes("女")) return "#f9a8d4";
+      return "#94a3b8";
+    }
+
+    function renderPairGraph() {
+      const svg = $("pairGraphSvg");
+      if (!svg) return;
+      const rows = state.matchRows || [];
+      const unmatched = state.unmatchedRows || [];
+      const userMap = new Map();
+      const matchedIds = new Set();
+      for (const row of rows) {
+        userMap.set(row.userA.id, row.userA);
+        userMap.set(row.userB.id, row.userB);
+        matchedIds.add(row.userA.id);
+        matchedIds.add(row.userB.id);
+      }
+      for (const u of unmatched) {
+        userMap.set(u.id, u);
+      }
+      const matchedUsers = Array.from(matchedIds).map((id) => userMap.get(id)).filter(Boolean);
+      const pos = new Map();
+      const cx = 300;
+      const cy = 205;
+      const radius = Math.max(110, Math.min(170, matchedUsers.length * 10));
+      matchedUsers.forEach((u, idx) => {
+        const angle = (Math.PI * 2 * idx) / Math.max(1, matchedUsers.length);
+        pos.set(u.id, {
+          x: cx + radius * Math.cos(angle),
+          y: cy + radius * Math.sin(angle),
+          user: u,
+          unmatched: false
+        });
+      });
+      unmatched.forEach((u, idx) => {
+        const col = idx % 3;
+        const row = Math.floor(idx / 3);
+        pos.set(u.id, {
+          x: 730 + col * 72,
+          y: 70 + row * 62,
+          user: u,
+          unmatched: true
+        });
+      });
+
+      if (!rows.length && !unmatched.length) {
+        svg.innerHTML = `<rect width="980" height="420" fill="#161b22"/><text x="40" y="210" fill="#8b949e" font-size="16" font-family="Sora,sans-serif">该周暂无可视化数据</text>`;
+        return;
+      }
+
+      const edges = rows.map((r) => {
+        const a = pos.get(r.userA.id);
+        const b = pos.get(r.userB.id);
+        if (!a || !b) return "";
+        const stroke = edgeColor(r.score);
+        const width = 1.5 + Math.max(0, Math.min(4, Number(r.score || 0) / 25));
+        const tip = `${r.userA.name} ↔ ${r.userB.name}\n匹配分：${Number(r.score || 0).toFixed(1)}`;
+        return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="${width.toFixed(2)}" opacity="0.7" data-tip="${esc(tip)}"></line>`;
+      }).join("");
+
+      const nodes = Array.from(pos.values()).map((p) => {
+        const fill = nodeColor(p.user.gender, p.unmatched);
+        const label = String(p.user.name || "-").slice(0, 2);
+        const tip = `${p.user.name || "-"}\n${p.user.campus || "-"} · ${p.user.grade || "-"}${p.unmatched ? "\n未匹配" : ""}`;
+        return `
+          <g>
+            <circle cx="${p.x}" cy="${p.y}" r="16" fill="${fill}" stroke="rgba(255,255,255,.15)" stroke-width="2" data-tip="${esc(tip)}"></circle>
+            <text x="${p.x}" y="${p.y + 4}" text-anchor="middle" font-size="11" fill="#fff" font-weight="700" font-family="Noto Sans SC,sans-serif">${esc(label)}</text>
+          </g>
+        `;
+      }).join("");
+
+      svg.innerHTML = `
+        <rect x="0" y="0" width="980" height="420" fill="#161b22"></rect>
+        <text x="18" y="26" fill="#8b949e" font-size="13" font-family="Sora,sans-serif">已匹配网络</text>
+        <text x="700" y="26" fill="#8b949e" font-size="13" font-family="Sora,sans-serif">未匹配用户</text>
+        <line x1="680" y1="20" x2="680" y2="398" stroke="rgba(255,255,255,.06)"></line>
+        ${edges}
+        ${nodes}
+      `;
+      svg.querySelectorAll("[data-tip]").forEach((el) => {
+        el.addEventListener("mousemove", (evt) => showTip(evt, el.getAttribute("data-tip") || ""));
+        el.addEventListener("mouseleave", hideTip);
+      });
+    }
+
+    function buildHistogramBuckets() {
+      const rows = state.matchRows || [];
+      const ranges = [
+        { label: "0-20", min: 0, max: 20, items: [] },
+        { label: "20-40", min: 20, max: 40, items: [] },
+        { label: "40-60", min: 40, max: 60, items: [] },
+        { label: "60-80", min: 60, max: 80, items: [] },
+        { label: "80-100", min: 80, max: 100, items: [] }
+      ];
+      for (const row of rows) {
+        const score = Math.max(0, Math.min(100, Number(row.score || 0)));
+        const idx = score >= 100 ? 4 : Math.min(4, Math.floor(score / 20));
+        ranges[idx].items.push(row);
+      }
+      return ranges;
+    }
+
+    function renderBucketDetail(index) {
+      const bucket = (state.histogramBuckets || [])[index];
+      const box = $("scoreBucketDetail");
+      if (!bucket || !box) return;
+      if (!bucket.items.length) {
+        box.textContent = `${bucket.label} 区间暂无配对。`;
+        return;
+      }
+      box.innerHTML = [
+        `<b>${bucket.label} 区间（${bucket.items.length} 对）</b>`,
+        ...bucket.items.map((row) => `${esc(row.userA.name)} ↔ ${esc(row.userB.name)}（${Number(row.score || 0).toFixed(1)}）`)
+      ].join("<br />");
+    }
+
+    function renderHistogram() {
+      const svg = $("scoreHistSvg");
+      if (!svg) return;
+      const buckets = buildHistogramBuckets();
+      state.histogramBuckets = buckets;
+      const counts = buckets.map((b) => b.items.length);
+      const maxCount = Math.max(1, ...counts);
+      const left = 48;
+      const bottom = 226;
+      const chartW = 480;
+      const chartH = 180;
+      const barGap = 14;
+      const barW = (chartW - barGap * (buckets.length - 1)) / buckets.length;
+      const barColors = ["#f87171", "#fbbf24", "#a78bfa", "#38bdf8", "#34d399"];
+      const bars = buckets.map((b, i) => {
+        const value = b.items.length;
+        const h = (value / maxCount) * chartH;
+        const x = left + i * (barW + barGap);
+        const y = bottom - h;
+        return `
+          <g>
+            <rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}" rx="4" fill="${barColors[i]}" opacity="0.85" cursor="pointer" data-bucket-index="${i}" data-tip="${esc(`${b.label}：${value} 对`)}">
+              <animate attributeName="height" from="0" to="${h.toFixed(2)}" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1"/>
+              <animate attributeName="y" from="${bottom}" to="${y.toFixed(2)}" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1"/>
+            </rect>
+            <text x="${(x + barW / 2).toFixed(2)}" y="${bottom + 18}" text-anchor="middle" fill="#8b949e" font-size="12" font-family="Sora,sans-serif">${b.label}</text>
+            <text x="${(x + barW / 2).toFixed(2)}" y="${(y - 6).toFixed(2)}" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Sora,sans-serif" font-weight="600">${value}</text>
+          </g>
+        `;
+      }).join("");
+      svg.innerHTML = `
+        <rect x="0" y="0" width="560" height="260" fill="#161b22"></rect>
+        <line x1="${left}" y1="${bottom}" x2="${left + chartW}" y2="${bottom}" stroke="rgba(255,255,255,.08)"></line>
+        <line x1="${left}" y1="${bottom - chartH}" x2="${left}" y2="${bottom}" stroke="rgba(255,255,255,.08)"></line>
+        ${bars}
+      `;
+      svg.querySelectorAll("[data-bucket-index]").forEach((el) => {
+        el.addEventListener("click", () => {
+          renderBucketDetail(Number(el.getAttribute("data-bucket-index") || 0));
+        });
+        el.addEventListener("mousemove", (evt) => showTip(evt, el.getAttribute("data-tip") || ""));
+        el.addEventListener("mouseleave", hideTip);
+      });
+      const first = buckets.findIndex((b) => b.items.length > 0);
+      renderBucketDetail(first >= 0 ? first : 0);
+    }
+
+    function renderUnmatchedTable() {
+      const body = $("unmatchedTableBody");
+      const rows = state.unmatchedRows || [];
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="5">该周无未匹配用户</td></tr>`;
+        return;
+      }
+      body.innerHTML = rows.map((u) => `
+        <tr>
+          <td>${esc(u.name || "-")}</td>
+          <td>${genderTag(u.gender)}</td>
+          <td>${esc(u.campus || "-")} / ${esc(u.grade || "-")}</td>
+          <td>${formatDate(u.inPoolAt)}</td>
+          <td>${esc(u.reasonText || "-")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderTrendChart() {
+      const svg = $("trendSvg");
+      if (!svg) return;
+      const items = state.trendRows || [];
+      if (!items.length) {
+        svg.innerHTML = `<rect width="960" height="300" fill="#161b22"/><text x="40" y="140" fill="#8b949e" font-size="16" font-family="Sora,sans-serif">暂无趋势数据</text>`;
+        return;
+      }
+      const left = 52;
+      const top = 20;
+      const right = 920;
+      const bottom = 250;
+      const w = right - left;
+      const h = bottom - top;
+      const maxY = Math.max(
+        1,
+        ...items.map((x) => Math.max(Number(x.optIn || 0), Number(x.matchedPairs || 0), Number(x.unlockedPairs || 0)))
+      );
+      const stepX = items.length > 1 ? w / (items.length - 1) : 0;
+      const toX = (idx) => left + idx * stepX;
+      const toY = (val) => bottom - (Number(val || 0) / maxY) * h;
+
+      const buildLine = (key) => items.map((item, idx) => `${toX(idx).toFixed(2)},${toY(item[key]).toFixed(2)}`).join(" ");
+      const grid = [0, 0.25, 0.5, 0.75, 1].map((k) => {
+        const y = bottom - h * k;
+        return `<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="rgba(255,255,255,.04)"></line>`;
+      }).join("");
+      const xLabels = items.map((item, idx) => {
+        const show = items.length <= 6 || idx % Math.ceil(items.length / 6) === 0 || idx === items.length - 1;
+        if (!show) return "";
+        return `<text x="${toX(idx)}" y="${bottom + 18}" text-anchor="middle" fill="#8b949e" font-size="11" font-family="Sora,sans-serif">${esc(item.weekKey)}</text>`;
+      }).join("");
+      const pointLayer = (key, color, label) => items.map((item, idx) => {
+        const x = toX(idx);
+        const y = toY(item[key]);
+        const tip = `${item.weekKey}\n${label}：${item[key]}`;
+        return `<circle cx="${x}" cy="${y}" r="4" fill="${color}" stroke="#161b22" stroke-width="2" data-tip="${esc(tip)}"></circle>`;
+      }).join("");
+
+      // Build area fills for each line
+      const buildArea = (key, color) => {
+        const points = items.map((item, idx) => `${toX(idx).toFixed(2)},${toY(item[key]).toFixed(2)}`).join(" ");
+        return `<polygon fill="${color}" opacity="0.08" points="${toX(0)},${bottom} ${points} ${toX(items.length - 1)},${bottom}"></polygon>`;
+      };
+
+      svg.innerHTML = `
+        <rect x="0" y="0" width="960" height="300" fill="#161b22"></rect>
+        ${grid}
+        <line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" stroke="rgba(255,255,255,.08)"></line>
+        <line x1="${left}" y1="${top}" x2="${left}" y2="${bottom}" stroke="rgba(255,255,255,.08)"></line>
+        ${buildArea("optIn", "#818cf8")}
+        ${buildArea("matchedPairs", "#34d399")}
+        ${buildArea("unlockedPairs", "#fb7185")}
+        <polyline fill="none" stroke="#818cf8" stroke-width="2.5" stroke-linejoin="round" points="${buildLine("optIn")}"></polyline>
+        <polyline fill="none" stroke="#34d399" stroke-width="2.5" stroke-linejoin="round" points="${buildLine("matchedPairs")}"></polyline>
+        <polyline fill="none" stroke="#fb7185" stroke-width="2.5" stroke-linejoin="round" points="${buildLine("unlockedPairs")}"></polyline>
+        ${pointLayer("optIn", "#818cf8", "入池人数")}
+        ${pointLayer("matchedPairs", "#34d399", "匹配对数")}
+        ${pointLayer("unlockedPairs", "#fb7185", "解锁对数")}
+        ${xLabels}
+      `;
+      svg.querySelectorAll("[data-tip]").forEach((el) => {
+        el.addEventListener("mousemove", (evt) => showTip(evt, el.getAttribute("data-tip") || ""));
+        el.addEventListener("mouseleave", hideTip);
+      });
+    }
+
+    async function loadMatches() {
+      const wk = String($("matchWeekKey").value || state.activeWeekKey || "").trim();
+      const encoded = encodeURIComponent(wk);
+      const [matchData, unmatchedData, trendData, weekStats] = await Promise.all([
+        adminApi(`/api/admin/matches?weekKey=${encoded}`),
+        adminApi(`/api/admin/unmatched?weekKey=${encoded}`),
+        adminApi(`/api/admin/trend?weekKey=${encoded}`),
+        adminApi(`/api/admin/stats?weekKey=${encoded}`)
+      ]);
+      state.selectedWeekKey = String(matchData.weekKey || wk);
+      state.matchRows = matchData.items || [];
+      state.unmatchedRows = unmatchedData.items || [];
+      state.trendRows = trendData.items || [];
+      $("matchWeekKey").value = state.selectedWeekKey;
+
+      renderMatchTable();
+      renderOverviewCards(weekStats);
+      renderPairGraph();
+      renderHistogram();
+      renderUnmatchedTable();
+      renderTrendChart();
+    }
+
+    async function refreshAll() {
+      setStatus("刷新中...");
+      await loadStats();
+      await loadSchedulerStatus();
+      await loadMailQueueStats();
+      await loadMatchRuns();
+      await loadUsers();
+      await loadMatches();
+      await loadAnnouncements();
+      await loadFeedbackStats();
+      await loadWeeklyReport();
+      setStatus("数据已刷新");
+    }
+
+    function bindEvents() {
+      $("tabOpsBtn").addEventListener("click", () => switchTab("ops"));
+      $("tabWeeklyBtn").addEventListener("click", () => switchTab("weekly"));
+      $("saveKeyBtn").addEventListener("click", () => {
+        saveAdminKey();
+      });
+      $("refreshAllBtn").addEventListener("click", async () => {
+        try {
+          saveAdminKey();
+          await refreshAll();
+        } catch (err) {
+          setStatus(`刷新失败：${err.message}`, "err");
+        }
+      });
+      $("refreshSystemBtn").addEventListener("click", async () => {
+        try {
+          await loadSchedulerStatus();
+          await loadMailQueueStats();
+          setStatus("系统状态已刷新");
+        } catch (err) {
+          setStatus(`刷新系统状态失败：${err.message}`, "err");
+        }
+      });
+      $("refreshRunsBtn").addEventListener("click", async () => {
+        try {
+          await loadMatchRuns();
+          setStatus("匹配任务记录已刷新");
+        } catch (err) {
+          setStatus(`刷新匹配任务记录失败：${err.message}`, "err");
+        }
+      });
+      $("runMatchBtn").addEventListener("click", async () => {
+        saveAdminKey();
+        await runMatchTask();
+      });
+      $("userFilterBtn").addEventListener("click", async () => {
+        try {
+          state.usersPage = 1;
+          await loadUsers();
+          setStatus("用户列表已更新");
+        } catch (err) {
+          setStatus(`查询用户失败：${err.message}`, "err");
+        }
+      });
+      $("userPrevBtn").addEventListener("click", async () => {
+        if (state.usersPage <= 1) return;
+        state.usersPage -= 1;
+        try {
+          await loadUsers();
+        } catch (err) {
+          setStatus(`翻页失败：${err.message}`, "err");
+        }
+      });
+      $("userNextBtn").addEventListener("click", async () => {
+        const totalPages = Math.max(1, Math.ceil(state.usersTotal / state.usersLimit));
+        if (state.usersPage >= totalPages) return;
+        state.usersPage += 1;
+        try {
+          await loadUsers();
+        } catch (err) {
+          setStatus(`翻页失败：${err.message}`, "err");
+        }
+      });
+      $("matchQueryBtn").addEventListener("click", async () => {
+        try {
+          await loadMatches();
+          setStatus("匹配记录已更新");
+        } catch (err) {
+          setStatus(`查询匹配记录失败：${err.message}`, "err");
+        }
+      });
+      $("exportUsersBtn").addEventListener("click", async () => {
+        try {
+          const search = encodeURIComponent(String($("userSearch").value || "").trim());
+          const campus = encodeURIComponent(String($("userCampus").value || "").trim());
+          const grade = encodeURIComponent(String($("userGrade").value || "").trim());
+          await downloadCsv(`/api/admin/export/users?search=${search}&campus=${campus}&grade=${grade}`, "scu_datedrop_users.csv");
+          setStatus("用户 CSV 已导出");
+        } catch (err) {
+          setStatus(`导出用户 CSV 失败：${err.message}`, "err");
+        }
+      });
+      $("exportMatchesBtn").addEventListener("click", async () => {
+        try {
+          const wk = encodeURIComponent(String($("matchWeekKey").value || state.activeWeekKey || "").trim());
+          await downloadCsv(`/api/admin/export/matches?weekKey=${wk}`, `scu_datedrop_matches_${decodeURIComponent(wk || "week")}.csv`);
+          setStatus("匹配 CSV 已导出");
+        } catch (err) {
+          setStatus(`导出匹配 CSV 失败：${err.message}`, "err");
+        }
+      });
+      $("weeklyRefreshBtn").addEventListener("click", async () => {
+        try {
+          await loadWeeklyReport();
+          setStatus("周报已更新");
+        } catch (err) {
+          setStatus(`刷新周报失败：${err.message}`, "err");
+        }
+      });
+      $("weeklyPrintBtn").addEventListener("click", () => {
+        switchTab("weekly");
+        window.print();
+      });
+      $("annPublishBtn").addEventListener("click", async () => {
+        try {
+          await publishAnnouncement();
+        } catch (err) {
+          setStatus(`发布公告失败：${err.message}`, "err");
+        }
+      });
+      $("annRefreshBtn").addEventListener("click", async () => {
+        try {
+          await loadAnnouncements();
+          setStatus("公告列表已刷新");
+        } catch (err) {
+          setStatus(`刷新公告失败：${err.message}`, "err");
+        }
+      });
+      $("feedbackRefreshBtn").addEventListener("click", async () => {
+        try {
+          await loadFeedbackStats();
+          setStatus("反馈统计已刷新");
+        } catch (err) {
+          setStatus(`刷新反馈统计失败：${err.message}`, "err");
+        }
+      });
+    }
+
+    const BUILTIN_KEY = "6edd1adc9eb30f995809add68a13f1f1519b69642e5fd5253a08dc472c683642";
+
+    async function init() {
+      const query = new URLSearchParams(location.search);
+      const queryKey = String(query.get("adminKey") || "").trim();
+      if (queryKey) {
+        state.adminKey = queryKey;
+        sessionStorage.setItem("scu_admin_key", queryKey);
+        history.replaceState({}, "", location.pathname);
+      }
+      if (!state.adminKey) {
+        state.adminKey = BUILTIN_KEY;
+      }
+      $("adminKey").value = state.adminKey;
+      bindEvents();
+      switchTab("ops");
+      if (!state.adminKey) {
+        setStatus("请先输入管理员密钥，然后点击「刷新全部」");
+        return;
+      }
+      try {
+        await refreshAll();
+      } catch (err) {
+        setStatus(`初始化失败：${err.message}`, "err");
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

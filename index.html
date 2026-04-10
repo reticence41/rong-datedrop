@@ -1,0 +1,3586 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>蓉约 DateDrop · 成都高校交友平台</title>
+  <meta name="description" content="成都高校交友平台，覆盖川大、电子科大、西南交大等11所高校，每周为你匹配一位最合拍的同学。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#faf8f5;
+      --card:#ffffff;
+      --line:#e8e4df;
+      --text:#2d2a26;
+      --sub:#5a5550;
+      --primary:#8b3a3a;
+      --secondary:#d4956a;
+      --accent:#f5ede2;
+      --radius:22px;
+      --navy:#1f245c;
+      --cta:#c14e2f;
+      --pill:#f1ece4;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      font-family:"Inter","PingFang SC","Microsoft YaHei",sans-serif;
+      color:var(--text);
+      padding-bottom:calc(64px + env(safe-area-inset-bottom));
+      background:
+        radial-gradient(circle at 8% 80%, rgba(212,149,106,.11), transparent 28%),
+        radial-gradient(circle at 92% 12%, rgba(139,58,58,.08), transparent 32%),
+        var(--bg);
+    }
+    .net-banner {
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      z-index:90;
+      transform:translateY(-120%);
+      transition:transform .28s ease;
+      background:#b23b1b;
+      color:#fff;
+      font-size:14px;
+      font-weight:600;
+      text-align:center;
+      padding:10px 16px;
+    }
+    .net-banner.show { transform:translateY(0); }
+    .announce-bar {
+      display:none;
+      border-bottom:1px solid #e6d8c8;
+      background:linear-gradient(120deg,#fff6eb,#fffdf7);
+    }
+    .announce-inner {
+      width:min(1120px,calc(100% - 36px));
+      margin:0 auto;
+      padding:10px 0;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .announce-copy {
+      font-size:13px;
+      line-height:1.7;
+      color:#5f4a3b;
+    }
+    .announce-copy b {
+      color:#8b3a3a;
+    }
+    .announce-close {
+      border:1px solid #d9c7b3;
+      background:#fff;
+      color:#8a4e2f;
+      border-radius:999px;
+      min-width:32px;
+      height:32px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      padding:0;
+      flex:0 0 auto;
+    }
+    .toast-wrap {
+      position:fixed;
+      left:50%;
+      top:18px;
+      transform:translateX(-50%);
+      z-index:95;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      width:min(92vw,420px);
+      pointer-events:none;
+    }
+    .toast {
+      border-radius:12px;
+      padding:12px 12px 12px 14px;
+      box-shadow:0 16px 28px rgba(20,16,14,.18);
+      color:#fff;
+      font-size:14px;
+      line-height:1.5;
+      font-weight:600;
+      transform:translateY(-16px);
+      opacity:0;
+      transition:transform .24s ease, opacity .24s ease;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      pointer-events:auto;
+    }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.hide { transform:translateY(-12px); opacity:0; }
+    .toast-msg { flex:1; }
+    .toast.info { background:#224f78; }
+    .toast.success { background:#1f7a51; }
+    .toast.error { background:#b23b1b; }
+    .toast.warning { background:#9a6509; }
+    .toast-close {
+      border:0;
+      background:transparent;
+      color:#ffffffcc;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      cursor:pointer;
+      font-size:16px;
+      line-height:1;
+      padding:0;
+      display:grid;
+      place-items:center;
+    }
+    .toast-close:hover { background:rgba(255,255,255,.16); color:#fff; }
+    .global-loading {
+      position:fixed;
+      right:14px;
+      top:14px;
+      width:212px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      background:#fffcf8;
+      box-shadow:0 8px 24px rgba(34,32,30,.12);
+      z-index:94;
+      display:none;
+    }
+    .global-loading.show { display:block; }
+    .skeleton {
+      position:relative;
+      overflow:hidden;
+      background:#eee7df;
+      border-radius:8px;
+      height:10px;
+      margin:8px 0;
+    }
+    .skeleton::after {
+      content:"";
+      position:absolute;
+      inset:0;
+      transform:translateX(-100%);
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.82),transparent);
+      animation:shimmer 1.1s linear infinite;
+    }
+    @keyframes shimmer {
+      to { transform:translateX(100%); }
+    }
+    .title { font-family:"Playfair Display","Noto Serif SC",serif; letter-spacing:-.02em; }
+    .container { width:min(1120px,calc(100% - 36px)); margin:0 auto; }
+    .topbar { display:none; position:fixed; inset:0 0 auto 0; z-index:30; backdrop-filter:blur(10px);
+      background:rgba(248,245,239,.82); border-bottom:1px solid rgba(232,225,214,.75); }
+    .topbar .container { height:72px; display:flex; align-items:center; justify-content:space-between; }
+    .brand { font-size:24px; font-weight:900; color:var(--primary); font-style:italic; font-family:"Noto Serif SC",serif; }
+    .tag { font-size:12px; color:var(--sub); border:1px solid var(--line); border-radius:999px; padding:8px 12px; background:#ffffffc8; }
+    .page { display:none; animation:fade .45s cubic-bezier(.16,1,.3,1); }
+    .page.active { display:block; }
+    @keyframes fade { from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
+    .hero { padding:112px 0 70px; display:grid; grid-template-columns:1.05fr .95fr; gap:42px; align-items:center; }
+    .home-legacy { display:block; padding-bottom:42px; }
+    .signup-shell {
+      min-height:auto;
+      display:block;
+      background:#f5f1ea;
+      padding-top:14px;
+    }
+    .signup-left {
+      position:relative;
+      overflow:hidden;
+      padding:52px clamp(20px,5vw,58px) 40px;
+      background:#1a1612;
+      border-bottom:1px solid #e9dfd5;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height:72vh;
+    }
+    .campus-slides {
+      position:absolute;
+      inset:0;
+      z-index:0;
+    }
+    .campus-slide {
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center;
+      opacity:0;
+      transition:opacity 1.2s ease;
+    }
+    .campus-slide.active { opacity:1; }
+    .campus-slide::after {
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(
+        160deg,
+        rgba(10,8,5,.55) 0%,
+        rgba(18,12,8,.32) 45%,
+        rgba(6,4,2,.62) 100%
+      );
+    }
+    .signup-left::before {
+      content:"遇";
+      position:absolute;
+      right:8%;
+      top:4%;
+      font-size:clamp(10rem,22vw,18rem);
+      color:rgba(255,255,255,.06);
+      font-family:"Noto Serif SC",serif;
+      pointer-events:none;
+      line-height:1;
+      z-index:1;
+    }
+    .campus-caption {
+      position:absolute;
+      bottom:16px;
+      right:20px;
+      font-size:11px;
+      color:rgba(255,255,255,.52);
+      letter-spacing:.12em;
+      z-index:2;
+    }
+    .signup-brand {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:rgba(255,200,160,.9);
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      z-index:2;
+      position:relative;
+    }
+    .signup-brand i {
+      width:24px; height:1px; background:rgba(255,200,160,.7); display:inline-block;
+    }
+    .signup-cn {
+      color:#fff;
+      font-family:"Noto Serif SC",serif;
+      font-size:clamp(2.2rem,5.3vw,4.1rem);
+      line-height:1.1;
+      margin:0 0 14px;
+      letter-spacing:-.02em;
+      position:relative;
+      z-index:2;
+      text-shadow:0 2px 18px rgba(0,0,0,.45);
+    }
+    .signup-cn em { color:#f5c4a0; font-style:normal; }
+    .signup-desc {
+      margin:0;
+      color:rgba(255,255,255,.82);
+      font-size:20px;
+      line-height:1.82;
+      max-width:26ch;
+      position:relative;
+      z-index:2;
+      text-shadow:0 1px 8px rgba(0,0,0,.4);
+    }
+    .signup-active {
+      margin-top:26px;
+      display:inline-flex; align-items:center; gap:10px;
+      background:rgba(255,255,255,.15);
+      border:1px solid rgba(255,255,255,.28);
+      border-radius:999px;
+      padding:10px 16px;
+      color:rgba(255,255,255,.9); font-size:14px; font-weight:600;
+      width:fit-content;
+      position:relative;
+      z-index:2;
+      backdrop-filter:blur(6px);
+    }
+    .signup-active .dot { width:10px; height:10px; }
+    .signup-actions { margin-top:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; position:relative; z-index:2; }
+    .signup-note { color:rgba(255,255,255,.6); font-size:13px; letter-spacing:.02em; }
+    .scu-scene {
+      margin-top:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      position:relative;
+      z-index:2;
+    }
+    .scu-scene span {
+      border:1px solid rgba(255,255,255,.28);
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:12px;
+      color:rgba(255,255,255,.82);
+      background:rgba(255,255,255,.12);
+      backdrop-filter:blur(4px);
+    }
+    .signup-right {
+      padding:0 16px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:transparent;
+      transform:translateY(-26px);
+    }
+    .signup-form {
+      width:min(860px, 100%);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:0 10px 32px rgba(45,42,38,.08);
+      padding:22px;
+    }
+    .signup-form h2 {
+      margin:0 0 6px;
+      color:#171e5a;
+      font-size:48px;
+      font-family:"Noto Serif SC",serif;
+      letter-spacing:-.02em;
+    }
+    .signup-form p {
+      margin:0 0 24px; color:#9a9488; font-size:17px;
+    }
+    .form-grid { display:grid; gap:12px; }
+    .form-label { display:block; color:#484c54; font-size:13px; font-weight:700; margin:0 0 6px; }
+    .signup-input, .signup-select {
+      width:100%;
+      height:54px;
+      border:1px solid #e5ddd2;
+      border-radius:18px;
+      background:var(--pill);
+      padding:0 16px;
+      color:#242932;
+      font-size:16px;
+      outline:none;
+      transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .signup-input::placeholder { color:#9b9a95; }
+    .signup-input:focus, .signup-select:focus {
+      border-color:#b65e3a;
+      box-shadow:0 0 0 3px rgba(182,94,58,.13);
+      background:#f7f3ec;
+    }
+    .mail-wrap { position:relative; }
+    .mail-wrap .signup-input { padding-right:108px; }
+    .mail-suffix {
+      position:absolute;
+      right:13px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#9d988d;
+      font-size:13px;
+      font-weight:600;
+      letter-spacing:.01em;
+      pointer-events:none;
+    }
+    .signup-row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .code-row { display:grid; grid-template-columns:1fr auto; gap:10px; }
+    .code-btn {
+      border:0;
+      border-radius:16px;
+      background:#c74924;
+      color:#fff;
+      font-weight:700;
+      font-size:15px;
+      padding:0 18px;
+      cursor:pointer;
+      min-width:136px;
+      box-shadow:0 8px 18px rgba(199,73,36,.22);
+    }
+    .code-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .auth-hint { margin:8px 0 0; font-size:13px; color:#78756f; line-height:1.65; min-height:24px; }
+    .auth-hint.err { color:#b33428; font-weight:600; }
+    .submit-btn {
+      margin-top:14px;
+      width:100%;
+      height:58px;
+      border:0;
+      border-radius:999px;
+      background:linear-gradient(120deg,#242969,#1a116f 45%,#1f177b 100%);
+      color:#fff;
+      font-size:20px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 10px 26px rgba(34,35,102,.24);
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .submit-btn:hover { transform:translateY(-1px); box-shadow:0 14px 30px rgba(34,35,102,.3); }
+    .submit-btn:disabled { opacity:.55; cursor:not-allowed; }
+    .auth-extra {
+      margin-top:10px; color:#878174; font-size:13px;
+    }
+    .auth-extra b { color:#c24f28; cursor:pointer; }
+    .eyebrow { font-size:10px; letter-spacing:.26em; color:var(--secondary); text-transform:uppercase; font-weight:700; margin-bottom:13px; }
+    .live { font-size:13px; color:var(--sub); display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+    .dot { width:9px; height:9px; border-radius:50%; background:#0b9f71; box-shadow:0 0 0 0 rgba(11,159,113,.45); animation:pulse 1.8s infinite; }
+    @keyframes pulse { 70%{box-shadow:0 0 0 8px rgba(11,159,113,0)} 100%{box-shadow:0 0 0 0 rgba(11,159,113,0)} }
+    h1 { margin:0 0 16px; font-size:clamp(2.2rem,6.4vw,4.8rem); color:var(--primary); line-height:1.07; }
+    h1 em { color:var(--secondary); font-style:italic; }
+    .hero p { margin:0 0 26px; color:var(--sub); line-height:1.8; font-size:16px; max-width:36ch; }
+    .row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .btn {
+      border:0;
+      border-radius:999px;
+      background:linear-gradient(120deg,#242969,#1a116f 45%,#1f177b 100%);
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      padding:13px 26px;
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(34,35,102,.24);
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .btn:hover { transform:translateY(-1px); box-shadow:0 14px 28px rgba(34,35,102,.28); }
+    .btn:disabled { opacity:.3; cursor:not-allowed; }
+    .link { color:var(--primary); text-decoration:none; border-bottom:1px solid #103a6659; font-weight:600; padding-bottom:2px; }
+    .hero-card { border-radius:28px; background:linear-gradient(135deg,#103a66,#2c6896); min-height:340px; color:#fff; padding:28px; box-shadow:0 16px 38px rgba(16,58,102,.24);
+      display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden; }
+    .hero-card::after { content:""; position:absolute; width:190px; height:190px; border-radius:50%; right:-52px; top:-62px; background:radial-gradient(circle, rgba(244,194,109,.8), transparent 67%); }
+    .hero-card small { text-transform:uppercase; letter-spacing:.2em; color:#ffffffb6; }
+    .hero-card .quote { margin:8px 0 0; font-size:27px; line-height:1.5; max-width:12ch; }
+    .hero-card .tip { margin:0; align-self:flex-end; max-width:260px; background:#ffffff2b; border:1px solid #ffffff3d; border-radius:14px; padding:12px; font-size:13px; line-height:1.7; }
+    section.block { padding:64px 0; }
+    .panel { background:#fffffff2; border:1px solid var(--line); border-radius:26px; padding:28px; box-shadow:0 10px 24px rgba(8,28,48,.05); }
+    .manifesto { text-align:center; font-family:"Noto Serif SC",serif; color:var(--primary); font-size:clamp(1.18rem,2.3vw,1.85rem); line-height:1.9; max-width:840px; margin:0 auto; }
+    .steps { margin-top:22px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .step { border:1px solid var(--line); border-radius:18px; background:#fff; padding:18px; position:relative; overflow:hidden; }
+    .step b { position:absolute; right:10px; top:-10px; font-size:74px; color:#103a6612; font-family:"Noto Serif SC",serif; }
+    .step .mini { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--secondary); font-weight:700; margin-bottom:8px; }
+    .step h3 { margin:0 0 6px; color:var(--primary); font-family:"Noto Serif SC",serif; font-size:21px; }
+    .step p { margin:0; color:var(--sub); font-size:14px; line-height:1.75; }
+    .why-grid { margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .why { border:1px solid var(--line); border-radius:14px; background:#fff; padding:14px; }
+    .why h4 { margin:0 0 6px; color:var(--primary); font-size:17px; font-family:"Noto Serif SC",serif; }
+    .why p { margin:0; color:var(--sub); font-size:14px; line-height:1.75; }
+    .quote-panel { margin-top:16px; border-radius:22px; background:linear-gradient(130deg,#103a66,#255f8f); color:#fff; padding:24px; }
+    .quote-panel p { margin:0; font-size:22px; line-height:1.85; font-family:"Noto Serif SC",serif; font-style:italic; }
+    .quote-panel span { display:block; margin-top:14px; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#ffffffb8; }
+    .cta { text-align:center; padding:0 0 80px; }
+    .cta h2 { margin:0 0 12px; font-size:clamp(1.9rem,4.2vw,3.2rem); color:var(--primary); line-height:1.15; }
+    .cta p { margin:0 auto 22px; color:var(--sub); line-height:1.8; max-width:36ch; }
+    footer { border-top:1px solid var(--line); text-align:center; color:var(--sub); font-size:12px; padding:24px 0 30px; }
+    /* ── Quiz layout ── */
+    .quiz { padding:96px 0 56px; }
+    .quiz .panel { padding:24px; }
+    .quiz-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .back { border:0; border-radius:999px; background:#efe9df; color:#6f6557; font-weight:700; height:38px; padding:0 14px; cursor:pointer; }
+    .step-text { color:var(--sub); font-size:13px; font-weight:600; }
+    .bar { height:6px; background:#ece4d9; border-radius:999px; overflow:hidden; margin-bottom:20px; }
+    .bar i { display:block; height:100%; width:33.3%; background:linear-gradient(120deg,#242969,#1a116f 45%,#1f177b 100%); transition:width .3s ease; }
+    .qstep { display:none; } .qstep.active { display:block; }
+    .qstep h2 { margin:0 0 7px; font-size:30px; color:var(--primary); font-family:"Noto Serif SC",serif; }
+    .qsub { margin:0 0 18px; color:var(--sub); font-size:14px; line-height:1.7; }
+    .group { margin-bottom:16px; } .group > p { margin:0 0 8px; color:var(--primary); font-size:14px; font-weight:700; }
+    .sub-group { display:none; }
+    .sub-group.active { display:block; }
+    .sub-nav-btns { display:flex; justify-content:space-between; margin-top:16px; gap:12px; }
+    .sub-nav-btns .btn, .sub-nav-btns .ghost { flex:1; }
+    .sub-counter { text-align:center; color:var(--sub); font-size:13px; font-weight:600; margin-bottom:8px; }
+    .auth-box { border:1px solid var(--line); border-radius:14px; background:#fffdf8; padding:12px; margin-bottom:16px; }
+    .auth-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .auth-title { margin:0 0 8px; color:var(--primary); font-size:14px; font-weight:700; }
+    .auth-note { margin:8px 0 0; color:var(--sub); font-size:12px; line-height:1.6; }
+    .badge { display:inline-flex; align-items:center; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700; }
+    .badge.wait { background:#f4ebde; color:#8c5b2f; }
+    .badge.ok { background:#e6f6f0; color:#09714f; }
+    .tiny-btn { border:1px solid #d9c7b3; background:#fff; color:#b75814; border-radius:999px; height:34px; padding:0 14px; font-size:12px; font-weight:700; cursor:pointer; }
+    .opts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+    .opt { border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--sub); cursor:pointer; padding:10px 8px; font-size:13px; }
+    .opt.sel { background:#f4ede6; color:#7c3535; border-color:#c6a58a; font-weight:600; }
+    .values { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; margin-bottom:16px; }
+    .value { border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--sub); cursor:pointer; padding:9px 8px; font-size:12px; }
+    .value.sel { background:#8b3a3a; color:#fff; border-color:#8b3a3a; font-weight:600; }
+    .value.off { opacity:.3; pointer-events:none; }
+    .count { color:var(--secondary); font-weight:700; font-size:13px; margin-bottom:12px; }
+    .slider { border:1px solid var(--line); border-radius:14px; background:#fffdf8; padding:12px; margin-bottom:12px; }
+    .slider p { margin:0 0 8px; color:var(--primary); font-size:14px; font-weight:700; }
+    .slider input[type=range] {
+      display:none;
+    }
+    .score-picker { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin:8px 0 6px; }
+    .score-btn {
+      border:1px solid #decec0;
+      border-radius:10px;
+      height:34px;
+      background:#fff;
+      color:#7a6f64;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .2s ease;
+    }
+    .score-btn:hover { border-color:#b97f5a; color:#954a30; }
+    .score-btn.active { border-color:#8b3a3a; background:#8b3a3a; color:#fff; box-shadow:0 6px 14px rgba(139,58,58,.22); }
+    .score-btn.active[data-score="1"] { background: #4a90d9; border-color: #4a90d9; }
+    .score-btn.active[data-score="2"] { background: #6a9fd4; border-color: #6a9fd4; }
+    .score-btn.active[data-score="3"] { background: #8bae8b; border-color: #8bae8b; }
+    .score-btn.active[data-score="4"] { background: #b8a86a; border-color: #b8a86a; }
+    .score-btn.active[data-score="5"] { background: #d4956a; border-color: #d4956a; }
+    .score-btn.active[data-score="6"] { background: #c27054; border-color: #c27054; }
+    .score-btn.active[data-score="7"] { background: #b34a4a; border-color: #b34a4a; }
+    .slider-label {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 6px;
+      min-height: 20px;
+      transition: opacity 0.2s;
+    }
+    .scale { margin-top:6px; display:flex; justify-content:space-between; color:var(--sub); font-size:12px; }
+    .scale b { color:var(--secondary); font-size:14px; }
+    .contact-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { color:var(--primary); font-size:12px; font-weight:600; }
+    .input { height:38px; border:1px solid #dccfbe; border-radius:10px; background:#fff; padding:0 10px; font-size:16px; color:var(--text); outline:none; }
+    .input:focus { border-color:#2b6192; box-shadow:0 0 0 2px rgba(43,97,146,.15); }
+    .hint { margin-top:8px; color:var(--sub); font-size:12px; }
+    .hint.err { color:#b23b1b; font-weight:600; }
+    .next { display:flex; justify-content:flex-end; margin-top:14px; }
+    .done { min-height:100vh; display:grid; place-items:center; padding:104px 0 56px; }
+    .done .panel { width:min(620px,calc(100% - 24px)); text-align:center; }
+    .check { width:82px; height:82px; border-radius:50%; margin:0 auto 12px; display:grid; place-items:center; color:#fff; font-size:38px;
+      background:linear-gradient(135deg,#103a66,#2d6ca0); animation:pop .55s cubic-bezier(.16,1,.3,1) .16s both; }
+    @keyframes pop { from{transform:scale(.68); opacity:0} to{transform:scale(1); opacity:1} }
+    .done h1 { margin:0 0 6px; color:var(--primary); font-size:34px; font-family:"Noto Serif SC",serif; }
+    .done .sub { margin:0; }
+    .summary { margin:16px 0 20px; border:1px solid var(--line); border-radius:14px; background:#fffdf8; padding:14px; text-align:left; color:var(--sub); font-size:14px; line-height:1.8; }
+    .status-box { margin-top:10px; border:1px solid var(--line); border-radius:14px; background:#fff; padding:14px; text-align:left; color:var(--sub); font-size:14px; line-height:1.8; }
+    .status-box h4 { margin:0 0 8px; color:var(--primary); font-size:15px; font-family:"Noto Serif SC",serif; }
+    .status-err { color:#b23b1b; font-weight:600; }
+    .match-card {
+      border:1px solid #e6dacd;
+      border-radius:16px;
+      background:#fffcf8;
+      padding:16px;
+      display:grid;
+      gap:14px;
+    }
+    .match-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .match-week { font-size:13px; color:var(--sub); font-weight:700; }
+    .confidence-bar {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:4px 0 8px;
+      font-size:12px;
+    }
+    .confidence-label { color:var(--sub); white-space:nowrap; }
+    .confidence-track {
+      flex:1;
+      height:6px;
+      background:#e8e0d8;
+      border-radius:3px;
+      overflow:hidden;
+    }
+    .confidence-fill {
+      height:100%;
+      border-radius:3px;
+      background:linear-gradient(90deg,#f59e0b,#22c55e);
+      transition:width 0.6s ease;
+    }
+    .confidence-value { color:#74452f; font-weight:700; white-space:nowrap; }
+    .score-ring {
+      --ratio:0;
+      --dash:232.48;
+      width:88px;
+      height:88px;
+      position:relative;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+    }
+    .score-ring-svg { width:88px; height:88px; transform:rotate(-90deg); }
+    .score-ring-track,
+    .score-ring-progress {
+      fill:none;
+      stroke-width:8;
+      stroke-linecap:round;
+    }
+    .score-ring-track { stroke:#e8ddd0; }
+    .score-ring-progress {
+      stroke:#1f245c;
+      stroke-dasharray:var(--dash);
+      stroke-dashoffset:var(--dash);
+      transition:stroke-dashoffset .7s cubic-bezier(.16,1,.3,1);
+    }
+    .score-ring.show .score-ring-progress {
+      stroke-dashoffset:calc(var(--dash) * (1 - var(--ratio)));
+    }
+    .score-ring i {
+      position:absolute;
+      inset:15px;
+      border-radius:50%;
+      background:#fffdfa;
+      display:grid;
+      place-items:center;
+      color:#1f245c;
+      font-size:14px;
+      font-style:normal;
+      font-weight:800;
+      border:1px solid #efe4d7;
+    }
+    .match-profile {
+      border:1px solid #ebdfd2;
+      border-radius:12px;
+      background:#fff;
+      padding:10px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+      font-size:13px;
+    }
+    .match-profile b { color:#3f3227; }
+    .reason-tags {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .reason-chip {
+      border:1px solid #dccbbb;
+      background:#fff;
+      border-radius:999px;
+      font-size:12px;
+      color:#6a4c3a;
+      line-height:1.4;
+      padding:7px 10px;
+    }
+    .contact-panel {
+      position:relative;
+      border:1px solid #eadbc9;
+      border-radius:12px;
+      background:#fff;
+      padding:12px;
+      overflow:hidden;
+      display:grid;
+      gap:8px;
+    }
+    .contact-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border:1px solid #f0e6dc;
+      border-radius:10px;
+      padding:8px 10px;
+      background:#fffdfa;
+      font-size:13px;
+    }
+    .copy-btn {
+      border:1px solid #d4c3af;
+      background:#fff;
+      color:#8a4e2f;
+      border-radius:999px;
+      height:28px;
+      padding:0 10px;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .contact-panel.locked .contact-row { filter:blur(4px); user-select:none; pointer-events:none; }
+    .contact-mask {
+      position:absolute;
+      inset:0;
+      display:none;
+      place-items:center;
+      background:linear-gradient(to bottom,rgba(255,255,255,.45),rgba(255,255,255,.92));
+      color:#7b5440;
+      font-size:14px;
+      font-weight:700;
+      text-align:center;
+      padding:12px;
+    }
+    .contact-panel.locked .contact-mask { display:grid; }
+    .narrative-wrap {
+      margin-top:12px;
+      border:1px solid #c4daf0;
+      border-radius:14px;
+      padding:14px 16px;
+      background:linear-gradient(135deg,#f0f7ff 0%,#f5f0ff 100%);
+      text-align:left;
+    }
+    .narrative-wrap h4 {
+      margin:0 0 8px;
+      color:#3a5a8b;
+      font-size:15px;
+    }
+    .narrative-content {
+      font-size:13px;
+      line-height:1.7;
+      color:#444;
+      white-space:pre-wrap;
+      min-height:20px;
+    }
+    .narrative-content.loading {
+      color:#999;
+      font-style:italic;
+    }
+    .btn-narrative {
+      margin-top:10px;
+      background:linear-gradient(135deg,#6366f1,#8b5cf6) !important;
+      color:#fff !important;
+      font-size:13px;
+    }
+    .crush-wrap {
+      margin-top:12px;
+      border:1px solid #e8d4f0;
+      border-radius:14px;
+      padding:14px 16px;
+      background:linear-gradient(135deg,#fdf2ff 0%,#fff5f9 100%);
+      text-align:left;
+    }
+    .crush-wrap h4 {
+      margin:0 0 6px;
+      color:#8b3a8b;
+      font-size:15px;
+    }
+    .crush-desc {
+      margin:0 0 10px;
+      font-size:12px;
+      color:#666;
+      line-height:1.5;
+    }
+    .crush-form {
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .crush-form .input {
+      flex:1;
+      min-width:0;
+    }
+    .btn-crush {
+      background:linear-gradient(135deg,#d946ef,#ec4899) !important;
+      color:#fff !important;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+    .btn-crush:hover {
+      opacity:0.9;
+    }
+    .crush-status {
+      margin-top:8px;
+      font-size:13px;
+      color:#8b3a8b;
+      min-height:18px;
+    }
+    .crush-status.error {
+      color:#c0392b;
+    }
+    .crush-status.success {
+      color:#27ae60;
+    }
+    .crush-delete {
+      margin-top:6px;
+      font-size:12px;
+      color:#999;
+    }
+    /* ── Redesigned Match Card ─────────────────────────── */
+    .match-card-v2 {
+      background:#fff;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 2px 16px rgba(0,0,0,0.08);
+      text-align:left;
+    }
+    .match-card-header {
+      background:linear-gradient(135deg,#c0392b 0%,#e74c3c 100%);
+      padding:18px 20px 14px;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .match-card-header.crush-kind {
+      background:linear-gradient(135deg,#8b3a8b 0%,#d946ef 100%);
+    }
+    .match-avatar {
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.25);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      font-weight:700;
+      color:#fff;
+      flex-shrink:0;
+      border:2px solid rgba(255,255,255,0.5);
+    }
+    .match-header-info { flex:1; min-width:0; }
+    .match-header-name { font-size:18px; font-weight:700; margin-bottom:2px; }
+    .match-header-sub { font-size:13px; opacity:0.85; }
+    .match-kind-badge {
+      font-size:11px;
+      padding:3px 9px;
+      border-radius:20px;
+      background:rgba(255,255,255,0.25);
+      font-weight:600;
+      white-space:nowrap;
+    }
+    .match-score-badge {
+      font-size:22px;
+      font-weight:800;
+      line-height:1;
+    }
+    .match-score-sub { font-size:10px; opacity:0.8; margin-top:2px; text-align:center; }
+    .match-card-body { padding:16px 18px; }
+    .match-meta-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px 12px;
+      margin-bottom:14px;
+    }
+    .match-meta-item {
+      font-size:13px;
+      color:#555;
+    }
+    .match-meta-item b { color:#333; }
+    .match-section-title {
+      font-size:12px;
+      font-weight:700;
+      color:#888;
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+      margin:14px 0 7px;
+    }
+    /* Greeting box */
+    .greet-box {
+      margin-top:12px;
+      border:1px solid #e8e0f8;
+      border-radius:12px;
+      padding:12px 14px;
+      background:#faf8ff;
+    }
+    .greet-box h5 { margin:0 0 8px; font-size:13px; color:#6b3fa0; }
+    .greet-their-msg {
+      background:#ede9ff;
+      border-radius:8px;
+      padding:8px 12px;
+      font-size:13px;
+      color:#4a2c8a;
+      margin-bottom:8px;
+      line-height:1.5;
+    }
+    .greet-my-msg {
+      background:#f0fff4;
+      border-radius:8px;
+      padding:8px 12px;
+      font-size:13px;
+      color:#1a6b3a;
+      margin-bottom:8px;
+      line-height:1.5;
+    }
+    .greet-textarea {
+      width:100%;
+      box-sizing:border-box;
+      border:1px solid #d0c4f0;
+      border-radius:8px;
+      padding:8px 10px;
+      font-size:13px;
+      font-family:inherit;
+      resize:vertical;
+      min-height:72px;
+    }
+    .greet-textarea:focus { outline:none; border-color:#8b5cf6; }
+    .greet-foot {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:6px;
+      gap:8px;
+    }
+    .greet-count { font-size:11px; color:#aaa; }
+    .greet-submit-btn {
+      background:linear-gradient(135deg,#7c3aed,#a855f7);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:7px 16px;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .greet-submit-btn:hover { opacity:0.9; }
+    /* Pause toggle */
+    .pause-wrap {
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 14px;
+      background:#fff8f0;
+      border:1px solid #f0dcc8;
+      border-radius:12px;
+    }
+    .pause-label { font-size:13px; color:#8b5e3c; }
+    .pause-label b { color:#6b3c1e; }
+    .toggle-switch {
+      position:relative;
+      width:44px;
+      height:24px;
+      flex-shrink:0;
+    }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-track {
+      position:absolute;
+      inset:0;
+      background:#ccc;
+      border-radius:24px;
+      cursor:pointer;
+      transition:background .2s;
+    }
+    .toggle-track::before {
+      content:'';
+      position:absolute;
+      width:18px;
+      height:18px;
+      left:3px;
+      top:3px;
+      background:#fff;
+      border-radius:50%;
+      transition:transform .2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background:#e74c3c; }
+    .toggle-switch input:checked + .toggle-track::before { transform:translateX(20px); }
+    .consent-wrap {
+      margin-top:8px;
+      border:1px solid #ddc7b4;
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fffaf4;
+      text-align:left;
+    }
+    .consent-title {
+      margin:0 0 8px;
+      color:#74452f;
+      font-size:13px;
+      font-weight:700;
+    }
+    .slide-confirm {
+      position:relative;
+      width:100%;
+      height:44px;
+      border-radius:999px;
+      border:1px solid #dfc9b5;
+      background:#fff;
+      overflow:hidden;
+      user-select:none;
+      touch-action:none;
+    }
+    .slide-confirm[aria-disabled="true"] {
+      opacity:.7;
+      cursor:not-allowed;
+    }
+    .slide-fill {
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:0;
+      background:linear-gradient(120deg,#d5793d,#bf5127);
+      transition:width .16s ease;
+    }
+    .slide-text {
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      color:#7f6b5a;
+      font-size:13px;
+      font-weight:700;
+      letter-spacing:.01em;
+      pointer-events:none;
+      transition:color .18s ease;
+    }
+    .slide-confirm.done .slide-text { color:#fff; }
+    .slide-thumb {
+      position:absolute;
+      left:2px;
+      top:2px;
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      border:0;
+      background:#fff;
+      box-shadow:0 6px 14px rgba(36,25,16,.24);
+      color:#b75814;
+      display:grid;
+      place-items:center;
+      font-size:20px;
+      font-weight:700;
+      transform:translateX(0);
+      transition:transform .16s ease;
+      cursor:grab;
+      z-index:1;
+    }
+    .slide-thumb:active { cursor:grabbing; }
+    .consent-note {
+      margin:6px 0 0;
+      font-size:12px;
+      color:var(--sub);
+    }
+    .feedback-wrap {
+      margin-top:10px;
+      border:1px solid #ddc7b4;
+      border-radius:14px;
+      padding:12px;
+      background:#fffaf4;
+      text-align:left;
+      display:grid;
+      gap:10px;
+    }
+    .feedback-title {
+      margin:0;
+      color:#74452f;
+      font-size:15px;
+      font-weight:800;
+    }
+    .feedback-sub {
+      margin:0;
+      color:var(--sub);
+      font-size:12px;
+      line-height:1.7;
+    }
+    .star-row {
+      display:flex;
+      align-items:center;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .star-btn {
+      border:1px solid #d8c3ae;
+      background:#fff;
+      color:#b58a53;
+      border-radius:10px;
+      width:34px;
+      height:34px;
+      font-size:18px;
+      line-height:1;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+    }
+    .star-btn.active {
+      background:#c14e2f;
+      color:#fff;
+      border-color:#c14e2f;
+    }
+    .feedback-check {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      color:#5d5045;
+    }
+    .feedback-check input {
+      width:16px;
+      height:16px;
+      accent-color:#8b3a3a;
+    }
+    .feedback-textarea {
+      width:100%;
+      min-height:86px;
+      border:1px solid #dccfbe;
+      border-radius:10px;
+      background:#fff;
+      padding:8px 10px;
+      font-size:14px;
+      color:var(--text);
+      resize:vertical;
+      font-family:inherit;
+    }
+    .feedback-foot {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .feedback-status {
+      margin:0;
+      font-size:12px;
+      color:#7a6a5d;
+    }
+    .feedback-status.ok { color:#0a6f4a; font-weight:700; }
+    .feedback-status.err { color:#b23b1b; font-weight:700; }
+    .feedback-btn {
+      border:0;
+      border-radius:999px;
+      background:linear-gradient(120deg,#c14e2f,#ad3f25);
+      color:#fff;
+      height:38px;
+      padding:0 16px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .feedback-btn:disabled {
+      opacity:.5;
+      cursor:not-allowed;
+    }
+    .match-skeleton .skeleton { margin:10px 0; }
+    .resume-mask {
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(20,18,16,.45);
+      z-index:96;
+      padding:16px;
+    }
+    .resume-mask.show { display:flex; }
+    .resume-dialog {
+      width:min(92vw,420px);
+      background:#fff;
+      border-radius:16px;
+      border:1px solid #e8ddcf;
+      padding:18px;
+      box-shadow:0 20px 36px rgba(16,15,13,.2);
+    }
+    .resume-dialog h3 {
+      margin:0 0 8px;
+      color:#322920;
+      font-size:20px;
+      font-family:"Noto Serif SC",serif;
+    }
+    .resume-dialog p {
+      margin:0;
+      color:var(--sub);
+      font-size:14px;
+      line-height:1.75;
+    }
+    .resume-actions {
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+    }
+    .mobile-nav {
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:80;
+      display:grid;
+      height:64px;
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      background:rgba(255,252,247,.95);
+      border-top:1px solid #e5dbcf;
+      backdrop-filter:blur(10px);
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+    }
+    .mobile-nav button {
+      border:1px solid #dccfbe;
+      border-radius:10px;
+      background:#fff;
+      color:#6d5f53;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .mobile-nav button.active {
+      color:#fff;
+      border-color:#8b3a3a;
+      background:#8b3a3a;
+    }
+    .actions { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+    .ghost { border:1px solid #d9c7b3; background:#fff; color:#b75814; border-radius:999px; height:42px; padding:0 16px; font-size:14px; font-weight:600; cursor:pointer; }
+    .reveal { opacity:1; transform:none; }
+    html.js .reveal { opacity:0; transform:translateY(18px); transition:all .75s cubic-bezier(.16,1,.3,1); }
+    html.js .reveal.show { opacity:1; transform:none; }
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr;gap:24px}.steps,.why-grid{grid-template-columns:1fr}.opts{grid-template-columns:repeat(2,minmax(0,1fr))}.values{grid-template-columns:repeat(3,minmax(0,1fr))}.contact-grid{grid-template-columns:1fr}
+      .signup-left { min-height:44vh; }
+      .signup-left::before { right:8%; top:2%; font-size:clamp(8rem,28vw,12rem); }
+      .signup-right { align-items:flex-start; }
+      .signup-form { width:min(560px,100%); }
+    }
+    @media (max-width:620px){
+      .container{width:calc(100% - 22px)} .hero p,.cta p{font-size:15px} .hero-card{min-height:300px} .hero-card .quote{font-size:24px}
+      .panel{padding:20px} .qstep h2{font-size:26px}
+      .signup-form h2 { font-size:38px; }
+      .code-row { grid-template-columns:1fr; }
+      .code-btn { height:46px; }
+      .mail-suffix { font-size:12px; right:10px; }
+      .signup-cn { font-size:clamp(2rem,12vw,2.8rem); }
+      .signup-desc { font-size:16px; line-height:1.8; }
+      .signup-shell { padding-top:0; }
+      .signup-left { border-radius:0 0 24px 24px; }
+      .signup-right { transform:translateY(-18px); }
+      .home-legacy .steps { gap:10px; }
+      .score-btn { height:32px; font-size:12px; }
+      .announce-inner { width:calc(100% - 22px); }
+    }
+    @media (max-width:768px){
+      .hero,
+      .steps,
+      .why-grid,
+      .signup-row2,
+      .code-row,
+      .opts,
+      .values,
+      .contact-grid,
+      .match-profile {
+        grid-template-columns:1fr;
+      }
+      .score-picker { grid-template-columns:repeat(4,minmax(0,1fr)); }
+      .done { padding-bottom:110px; }
+      .slide-text { font-size:12px; }
+    }
+    input, select, textarea {
+      font-size:16px !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="netBanner" class="net-banner" role="status" aria-live="polite">网络连接已断开，请检查网络</div>
+  <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+  <div id="globalLoading" class="global-loading" aria-live="polite" aria-label="正在加载">
+    <div class="skeleton" style="width:88%"></div>
+    <div class="skeleton" style="width:100%"></div>
+    <div class="skeleton" style="width:74%"></div>
+  </div>
+  <div id="resumeMask" class="resume-mask" role="dialog" aria-modal="true" aria-labelledby="resumeTitle">
+    <div class="resume-dialog">
+      <h3 id="resumeTitle">继续未完成问卷？</h3>
+      <p>检测到未完成的问卷，是否继续？</p>
+      <div class="resume-actions">
+        <button class="ghost" type="button" id="resumeRestartBtn" aria-label="重新开始问卷">重新开始</button>
+        <button class="btn" type="button" id="resumeContinueBtn" aria-label="继续填写未完成问卷">继续</button>
+      </div>
+    </div>
+  </div>
+  <div class="topbar">
+    <div class="container">
+      <div class="brand">蓉约 DateDrop</div>
+      <div class="tag">不刷屏 · 不看脸 · 每周一位 · 成都高校专属</div>
+    </div>
+  </div>
+
+  <main id="home" class="page active">
+    <section id="announcementBar" class="announce-bar" style="display:block;" aria-live="polite">
+      <div class="announce-inner">
+        <div id="announcementCopy" class="announce-copy"><b>欢迎来到蓉约 DateDrop</b>：覆盖川大、电子科大、西南交大等<b>11所成都高校</b>。<b>每周一次精准匹配</b> — 填问卷，周四晚自动为你匹配一位最合拍的同学，支持跨校匹配。<b>AI 智能分析</b> — 每封匹配邮件都附带 AI 生成的个性化契合度报告。<b>隐私保障</b> — 联系方式需同意后才公开。</div>
+        <button id="announcementCloseBtn" class="announce-close" type="button" aria-label="关闭公告" onclick="this.closest('.announce-bar').style.display='none'">×</button>
+      </div>
+    </section>
+    <section class="signup-shell">
+      <div class="signup-left">
+        <div class="campus-slides" id="campusSlides" aria-hidden="true">
+          <div class="campus-slide active" style="background-image:url('/images/campus/campus-1.jpg')"></div>
+          <div class="campus-slide" style="background-image:url('/images/campus/campus-2.jpg')"></div>
+          <div class="campus-slide" style="background-image:url('/images/campus/campus-3.jpg')"></div>
+          <div class="campus-slide" style="background-image:url('/images/campus/campus-4.jpg')"></div>
+        </div>
+        <div class="campus-caption" id="campusCaption">江安 · 白石桥</div>
+        <div class="signup-brand"><i></i>蓉约</div>
+        <div>
+          <h1 class="signup-cn">在成都，遇见<em>对的人</em></h1>
+          <p class="signup-desc">十一所高校，数十万大学生，帮你找到那个频率相同的人。不刷屏，每周只为你匹配一位最合拍的同学。</p>
+          <div class="signup-actions">
+            <button class="btn" type="button" onclick="document.getElementById('authCard').scrollIntoView({behavior:'smooth',block:'center'})">开始匹配</button>
+            <span class="signup-note">每周四晚 9 点揭晓</span>
+          </div>
+          <div class="scu-scene">
+            <span>川大 · 江安明远湖</span>
+            <span>电子科大 · 清水河畔</span>
+            <span>西南交大 · 犀浦银杏</span>
+          </div>
+          <div class="signup-active"><span class="dot"></span><span id="live">0</span> 位同学已加入</div>
+        </div>
+      </div>
+      <div class="signup-right">
+        <div id="authCard" class="signup-form">
+          <h2>创建账户</h2>
+          <p id="homeModeTip">先完成认证，再填写问卷参与本周匹配</p>
+          <div class="form-grid">
+            <div>
+              <label class="form-label" for="homeName">昵称</label>
+              <input id="homeName" class="signup-input" placeholder="给自己取个昵称" />
+            </div>
+            <div>
+              <label class="form-label" for="homeUniversity">学校</label>
+              <select id="homeUniversity" class="signup-select" onchange="onUniversityChange()">
+                <option value="">选择学校</option>
+              </select>
+            </div>
+            <div class="signup-row2">
+              <div>
+                <label class="form-label" for="homeCampus">校区</label>
+                <select id="homeCampus" class="signup-select">
+                  <option value="">先选择学校</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="homeGrade">年级</label>
+                <select id="homeGrade" class="signup-select">
+                  <option value="">选择年级</option>
+                  <option value="大一">大一</option>
+                  <option value="大二">大二</option>
+                  <option value="大三">大三</option>
+                  <option value="大四及以上">大四及以上</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="form-label" for="homeMajor">专业</label>
+              <input id="homeMajor" class="signup-input" placeholder="你的专业（选填）" />
+            </div>
+            <div>
+              <label class="form-label" for="homeStudentId">学号</label>
+              <input id="homeStudentId" class="signup-input" placeholder="请输入学号" />
+            </div>
+            <div>
+              <label class="form-label" for="homeEmail">学校邮箱</label>
+              <div class="mail-wrap">
+                <input id="homeEmail" class="signup-input" placeholder="请输入学校邮箱" />
+                <span id="homeMailSuffix" class="mail-suffix">@请先选择学校</span>
+              </div>
+            </div>
+            <div id="homeCodeBlock">
+              <label class="form-label" for="homeCode">验证码</label>
+              <div class="code-row">
+                <input id="homeCode" class="signup-input" placeholder="输入6位验证码" maxlength="6" />
+                <button id="homeSendCodeBtn" class="code-btn" type="button" onclick="sendHomeOtp()">发送验证码</button>
+              </div>
+            </div>
+          </div>
+          <div id="homeAuthHint" class="auth-hint">认证后即可继续填写匹配问卷。</div>
+          <button id="homeSubmitBtn" class="submit-btn" onclick="submitHomeAuth()">认证并进入问卷</button>
+          <div class="auth-extra">已有登录状态？<b onclick="startQuiz()">直接进入问卷</b></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="home-legacy">
+    <section class="block">
+      <div class="container panel reveal">
+        <p class="manifesto">从川大明远湖到电子科大清水河畔，从交大犀浦银杏道到财大柳林光华，成都的每一所校园都有属于你的故事。我们相信在蓉城的慢节奏里，认真、真诚、勇敢，才能换来真正的遇见。</p>
+      </div>
+    </section>
+
+    <section id="how" class="block">
+      <div class="container">
+        <div class="eyebrow">How It Works</div>
+        <h2 class="title" style="margin:0;color:var(--primary);font-size:clamp(2rem,4.6vw,3.1rem);line-height:1.2;">简单三步，遇见惊喜</h2>
+        <div class="steps">
+          <article class="step reveal"><b>01</b><div class="mini">填写问卷</div><h3>建立深度档案</h3><p>从价值观到生活节律，36 道量表题勾勒出真实的你。不靠颜值滤镜，靠契合度说话。就像明远湖落日，慢慢等，才最美。</p></article>
+          <article class="step reveal"><b>02</b><div class="mini">每周参与</div><h3>周四晚 9 点揭晓</h3><p>一周一次，不会被高频消息打扰。就像在望江楼下发呆，等一个刚好从银杏道走来的人。</p></article>
+          <article class="step reveal"><b>03</b><div class="mini">双向确认</div><h3>收邮件并开启对话</h3><p>匹配理由 + AI 分析报告 + 破冰建议，一封邮件全搞定。约在江安长桥，还是华西坝的百年钟楼旁？</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="container panel">
+        <div class="eyebrow">成都 × 高校关键词</div>
+        <h2 class="title" style="margin:0;color:var(--primary);font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.22;">在熟悉的城市里，遇见更合拍的人</h2>
+        <div class="why-grid">
+          <div class="why reveal"><h4>望江慢生活</h4><p>银杏大道落叶、东门夜骑、小北门咖啡和老望江楼，生活气息浓得溢出来。</p></div>
+          <div class="why reveal"><h4>校园漫步</h4><p>成都每所高校都有独特的风景线——银杏大道、湖边落日、图书馆前的草坪，约会场景天然在线。</p></div>
+          <div class="why reveal"><h4>华西人文感</h4><p>百年钟楼与老建筑并存，四季银杏分明，最有人情味，也最适合慢慢走。</p></div>
+          <div class="why reveal"><h4>成都松弛感</h4><p>火锅是第一顿，串串配啤酒是日常，小酒馆民谣是夜晚。慢节奏，但很鲜活。</p></div>
+        </div>
+        <div class="quote-panel reveal">
+          <p>”在这座来了就不想走的城市，我遇见了一个想留下来的人。原来，频率相同的人，就在同一片校园里。”</p>
+          <span>蓉约 DateDrop · 用户真实反馈</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta container reveal">
+      <h2 class="title">准备好开启<br />周四惊喜了吗？</h2>
+      <p>给自己一次认真相遇的机会。在蓉城这座慢节奏的城市里，好的匹配不将就。</p>
+      <button class="btn" onclick="startQuiz()">立即开启匹配</button>
+    </section>
+    <footer class="container">蓉约 DateDrop · 成都高校交友平台<br />不刷屏 · 不看脸 · 每周一位 · 成都高校专属</footer>
+    </div>
+  </main>
+
+  <main id="quiz" class="page">
+    <section class="quiz">
+      <div class="container panel">
+        <div class="quiz-top"><button class="back" onclick="goBack()">← 返回</button><div id="stepText" class="step-text">1 / 3</div></div>
+        <div class="bar"><i id="bar"></i></div>
+
+        <div id="s1" class="qstep active">
+          <h2>先认识一下你</h2><p class="qsub">用于基础匹配，不公开全部信息。需先完成学校邮箱认证。</p>
+          <div class="auth-box">
+            <p class="auth-title">高校身份认证</p>
+            <div class="auth-row">
+              <span id="authBadge" class="badge wait">未认证</span>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="tiny-btn" type="button" onclick="verifyScuAuth()">前往认证</button>
+                <button id="logoutBtn" class="tiny-btn" type="button" onclick="logoutAuth()" style="display:none;">退出登录</button>
+              </div>
+            </div>
+            <p class="auth-note" id="authNote">使用学校邮箱验证码完成身份认证，确保每位用户都是在校生。</p>
+          </div>
+          <div class="group"><p>你的性别</p><div class="opts">
+            <button class="opt" data-k="gender" data-v="男生" onclick="pick('gender','男生',this)">男生</button>
+            <button class="opt" data-k="gender" data-v="女生" onclick="pick('gender','女生',this)">女生</button>
+          </div></div>
+          <div class="group"><p>希望认识</p><div class="opts">
+            <button class="opt" data-k="seeking" data-v="男生" onclick="pick('seeking','男生',this)">男生</button>
+            <button class="opt" data-k="seeking" data-v="女生" onclick="pick('seeking','女生',this)">女生</button>
+          </div></div>
+          <div class="group" id="gradeGroup"><p>年级</p><div class="opts">
+            <button class="opt" data-k="grade" data-v="大一" onclick="pick('grade','大一',this)">大一</button>
+            <button class="opt" data-k="grade" data-v="大二" onclick="pick('grade','大二',this)">大二</button>
+            <button class="opt" data-k="grade" data-v="大三" onclick="pick('grade','大三',this)">大三</button>
+            <button class="opt" data-k="grade" data-v="大四" onclick="pick('grade','大四',this)">大四</button>
+            <button class="opt" data-k="grade" data-v="硕士" onclick="pick('grade','硕士',this)">硕士</button>
+            <button class="opt" data-k="grade" data-v="博士" onclick="pick('grade','博士',this)">博士</button>
+            <button class="opt" data-k="grade" data-v="已毕业校友" onclick="pick('grade','已毕业校友',this)">已毕业校友</button>
+          </div></div>
+          <div class="group"><p>希望对方的年级<span style="font-weight:400;color:var(--sub);font-size:12px;">（可多选，不选则不限）</span></p><div class="opts" id="seekingGradesOpts">
+            <button class="opt" data-sg="大一" onclick="toggleSeekingGrade('大一',this)">大一</button>
+            <button class="opt" data-sg="大二" onclick="toggleSeekingGrade('大二',this)">大二</button>
+            <button class="opt" data-sg="大三" onclick="toggleSeekingGrade('大三',this)">大三</button>
+            <button class="opt" data-sg="大四" onclick="toggleSeekingGrade('大四',this)">大四</button>
+            <button class="opt" data-sg="硕士" onclick="toggleSeekingGrade('硕士',this)">硕士</button>
+            <button class="opt" data-sg="博士" onclick="toggleSeekingGrade('博士',this)">博士</button>
+            <button class="opt" data-sg="已毕业校友" onclick="toggleSeekingGrade('已毕业校友',this)">已毕业校友</button>
+          </div></div>
+          <div class="group"><p>主要校区</p><div class="opts" id="quizCampusOpts">
+            <button class="opt" data-k="campus" data-v="其他" onclick="pick('campus','其他',this)">其他</button>
+          </div></div>
+          <div class="next"><button id="b1" class="btn" onclick="toStep(2)" disabled>下一步</button></div>
+        </div>
+
+        <div id="s2" class="qstep">
+          <h2>核心特质与兴趣标签</h2><p class="qsub">按你提供的问卷内容整理：从核心特质、兴趣圈层、生活偏好中选择 8-18 项。</p>
+          <div id="count" class="count">已选择 0 / 至少8（最多18）</div>
+          <div class="values">
+            <button class="value" onclick="pickValue('诚实正直',this)">诚实正直</button><button class="value" onclick="pickValue('温柔善良',this)">温柔善良</button>
+            <button class="value" onclick="pickValue('聪明智慧',this)">聪明智慧</button><button class="value" onclick="pickValue('充满好奇心',this)">充满好奇心</button>
+            <button class="value" onclick="pickValue('乐观开朗',this)">乐观开朗</button><button class="value" onclick="pickValue('勇敢',this)">勇敢</button>
+            <button class="value" onclick="pickValue('冒险精神',this)">冒险精神</button><button class="value" onclick="pickValue('有创造力',this)">有创造力</button>
+            <button class="value" onclick="pickValue('高度自律',this)">高度自律</button><button class="value" onclick="pickValue('专业能力强',this)">专业能力强</button>
+            <button class="value" onclick="pickValue('独立',this)">独立</button><button class="value" onclick="pickValue('忠诚',this)">忠诚</button>
+            <button class="value" onclick="pickValue('顾家',this)">顾家</button><button class="value" onclick="pickValue('随性自在',this)">随性自在</button>
+            <button class="value" onclick="pickValue('注重生活品质',this)">注重生活品质</button><button class="value" onclick="pickValue('骑行',this)">骑行</button>
+            <button class="value" onclick="pickValue('健身',this)">健身</button><button class="value" onclick="pickValue('露营',this)">露营</button>
+            <button class="value" onclick="pickValue('球类运动',this)">球类运动</button><button class="value" onclick="pickValue('跑步',this)">跑步</button>
+            <button class="value" onclick="pickValue('徒步爬山',this)">徒步爬山</button><button class="value" onclick="pickValue('游泳水上',this)">游泳水上</button>
+            <button class="value" onclick="pickValue('跳舞',this)">跳舞</button><button class="value" onclick="pickValue('动漫二次元',this)">动漫二次元</button>
+            <button class="value" onclick="pickValue('电子竞技',this)">电子竞技</button><button class="value" onclick="pickValue('PC主机游戏',this)">PC主机游戏</button>
+            <button class="value" onclick="pickValue('桌游剧本杀',this)">桌游剧本杀</button><button class="value" onclick="pickValue('电影戏剧',this)">电影戏剧</button>
+            <button class="value" onclick="pickValue('绘画手工',this)">绘画手工</button><button class="value" onclick="pickValue('音乐乐器',this)">音乐乐器</button>
+            <button class="value" onclick="pickValue('历史社科',this)">历史社科</button><button class="value" onclick="pickValue('摄影后期',this)">摄影后期</button>
+            <button class="value" onclick="pickValue('阅读文学',this)">阅读文学</button><button class="value" onclick="pickValue('探店美食',this)">探店美食</button>
+            <button class="value" onclick="pickValue('旅行打卡',this)">旅行打卡</button><button class="value" onclick="pickValue('猫狗宠物',this)">猫狗宠物</button>
+            <button class="value" onclick="pickValue('烹饪烘焙',this)">烹饪烘焙</button><button class="value" onclick="pickValue('硬件数码',this)">硬件数码</button>
+            <button class="value" onclick="pickValue('编程算法',this)">编程算法</button><button class="value" onclick="pickValue('科学探索',this)">科学探索</button>
+            <button class="value" onclick="pickValue('金融商业分析',this)">金融商业分析</button><button class="value" onclick="pickValue('可接受跨校区恋爱',this)">可接受跨校区恋爱</button>
+            <button class="value" onclick="pickValue('可接受同学院匹配',this)">可接受同学院匹配</button><button class="value" onclick="pickValue('饮食要求-无',this)">饮食要求-无</button>
+            <button class="value" onclick="pickValue('饮食要求-清真',this)">饮食要求-清真</button><button class="value" onclick="pickValue('饮食要求-素食',this)">饮食要求-素食</button>
+          </div>
+          <div class="next"><button id="b2" class="btn" onclick="toStep(3)" disabled>进入量表题</button></div>
+        </div>
+
+        <div id="s3" class="qstep">
+          <h2>1-7 量表问卷</h2>
+          <p class="qsub">共 <span id="sliderTotal">0</span> 题</p>
+          <div id="subCounter" class="sub-counter">第 1 组 / 共 4 组</div>
+
+          <div class="sub-group active" data-sub="1">
+          <div class="group"><p>职业、人生轨迹与价值观</p></div>
+          <div class="slider"><p>我在学业/事业上更偏向：躺平 vs 内卷</p><input type="range" min="1" max="7" value="4" oninput="slide('involution_self',this)" /><div class="scale"><span>躺平</span><b id="v-involution_self">4</b><span>内卷</span></div></div>
+          <div class="slider"><p>我希望伴侣在学业/事业上更偏向：躺平 vs 上进</p><input type="range" min="1" max="7" value="4" oninput="slide('involution_partner',this)" /><div class="scale"><span>躺平</span><b id="v-involution_partner">4</b><span>上进</span></div></div>
+          <div class="slider"><p>毕业后更希望：回家乡/二三线 vs 一线城市打拼</p><input type="range" min="1" max="7" value="4" oninput="slide('city_path',this)" /><div class="scale"><span>回乡生活</span><b id="v-city_path">4</b><span>一线打拼</span></div></div>
+          <div class="slider"><p>我对婚姻的看法：不婚 vs 结婚</p><input type="range" min="1" max="7" value="4" oninput="slide('marriage_view',this)" /><div class="scale"><span>不婚</span><b id="v-marriage_view">4</b><span>结婚</span></div></div>
+          <div class="slider"><p>关键利益面前，善良比聪明更重要</p><input type="range" min="1" max="7" value="4" oninput="slide('kindness_priority',this)" /><div class="scale"><span>不同意</span><b id="v-kindness_priority">4</b><span>同意</span></div></div>
+          <div class="slider"><p>我愿意为理想放弃部分物质舒适</p><input type="range" min="1" max="7" value="4" oninput="slide('ideal_sacrifice',this)" /><div class="scale"><span>不同意</span><b id="v-ideal_sacrifice">4</b><span>同意</span></div></div>
+          <div class="slider"><p>家庭幸福 vs 个人事业：我更偏向</p><input type="range" min="1" max="7" value="4" oninput="slide('family_priority',this)" /><div class="scale"><span>事业优先</span><b id="v-family_priority">4</b><span>家庭优先</span></div></div>
+          <div class="slider"><p>我更看重：结果导向 vs 体验导向</p><input type="range" min="1" max="7" value="4" oninput="slide('process_orientation',this)" /><div class="scale"><span>结果</span><b id="v-process_orientation">4</b><span>体验</span></div></div>
+          <div class="slider"><p>做决策时我更偏向：感性直觉 vs 理性数据</p><input type="range" min="1" max="7" value="4" oninput="slide('rationality',this)" /><div class="scale"><span>感性</span><b id="v-rationality">4</b><span>理性</span></div></div>
+          <div class="slider"><p>我喜欢尝试新事物</p><input type="range" min="1" max="7" value="4" oninput="slide('novelty',this)" /><div class="scale"><span>不同意</span><b id="v-novelty">4</b><span>同意</span></div></div>
+          <div class="sub-nav-btns">
+            <button class="btn" onclick="subStep(1)">下一组 &rarr;</button>
+          </div>
+          </div>
+
+          <div class="sub-group" data-sub="2">
+          <div class="group"><p>生活习惯与约会偏好</p></div>
+          <div class="slider"><p>我的作息节律：夜猫子 vs 早起型</p><input type="range" min="1" max="7" value="4" oninput="slide('schedule',this)" /><div class="scale"><span>夜猫子</span><b id="v-schedule">4</b><span>早起型</span></div></div>
+          <div class="slider"><p>伴侣整洁收纳较随性，我的接受度</p><input type="range" min="1" max="7" value="4" oninput="slide('tidy_tolerance',this)" /><div class="scale"><span>不能接受</span><b id="v-tidy_tolerance">4</b><span>不在意</span></div></div>
+          <div class="slider"><p>日常饮食偏好：食堂解决 vs 外卖/外出</p><input type="range" min="1" max="7" value="4" oninput="slide('dining_style',this)" /><div class="scale"><span>食堂</span><b id="v-dining_style">4</b><span>外卖/外出</span></div></div>
+          <div class="slider"><p>我的食辣能力：一点不辣 vs 无辣不欢</p><input type="range" min="1" max="7" value="4" oninput="slide('spicy_level',this)" /><div class="scale"><span>不吃辣</span><b id="v-spicy_level">4</b><span>无辣不欢</span></div></div>
+          <div class="slider"><p>周末约会倾向：校园内学习散步 vs 去市中心</p><input type="range" min="1" max="7" value="4" oninput="slide('date_scene',this)" /><div class="scale"><span>校园内</span><b id="v-date_scene">4</b><span>市中心</span></div></div>
+          <div class="slider"><p>我希望空闲时间都和伴侣待在一起</p><input type="range" min="1" max="7" value="4" oninput="slide('together_time',this)" /><div class="scale"><span>需要独处</span><b id="v-together_time">4</b><span>尽量一起</span></div></div>
+          <div class="slider"><p>旅行时我更偏向：严格攻略 vs 享受意外</p><input type="range" min="1" max="7" value="4" oninput="slide('travel_style',this)" /><div class="scale"><span>按攻略</span><b id="v-travel_style">4</b><span>随性意外</span></div></div>
+          <div class="slider"><p>消费风格：节俭务实 vs 品质体验</p><input type="range" min="1" max="7" value="4" oninput="slide('spending_style',this)" /><div class="scale"><span>节俭</span><b id="v-spending_style">4</b><span>品质体验</span></div></div>
+          <div class="slider"><p>我希望伴侣与我有高度重合的兴趣</p><input type="range" min="1" max="7" value="4" oninput="slide('hobby_overlap',this)" /><div class="scale"><span>更互补</span><b id="v-hobby_overlap">4</b><span>高度重合</span></div></div>
+          <div class="sub-nav-btns">
+            <button class="ghost" onclick="subStep(-1)">&larr; 上一组</button>
+            <button class="btn" onclick="subStep(1)">下一组 &rarr;</button>
+          </div>
+          </div>
+
+          <div class="sub-group" data-sub="3">
+          <div class="group"><p>健康习惯与社交能量</p></div>
+          <div class="slider"><p>我本人吸烟/电子烟频率</p><input type="range" min="1" max="7" value="4" oninput="slide('smoking_self',this)" /><div class="scale"><span>从不抽</span><b id="v-smoking_self">4</b><span>经常抽</span></div></div>
+          <div class="slider"><p>我能接受伴侣抽烟/电子烟</p><input type="range" min="1" max="7" value="4" oninput="slide('smoking_partner',this)" /><div class="scale"><span>不接受</span><b id="v-smoking_partner">4</b><span>不介意</span></div></div>
+          <div class="slider"><p>我本人饮酒频率</p><input type="range" min="1" max="7" value="4" oninput="slide('drinking_self',this)" /><div class="scale"><span>滴酒不沾</span><b id="v-drinking_self">4</b><span>经常饮酒</span></div></div>
+          <div class="slider"><p>我能接受伴侣饮酒</p><input type="range" min="1" max="7" value="4" oninput="slide('drinking_partner',this)" /><div class="scale"><span>不接受</span><b id="v-drinking_partner">4</b><span>不介意</span></div></div>
+          <div class="slider"><p>伴侣几个小时不回微信，我会焦虑</p><input type="range" min="1" max="7" value="4" oninput="slide('message_anxiety',this)" /><div class="scale"><span>不会</span><b id="v-message_anxiety">4</b><span>会</span></div></div>
+          <div class="slider"><p>社交能量（自身）：外向社交 vs 内向安静</p><input type="range" min="1" max="7" value="4" oninput="slide('social_self',this)" /><div class="scale"><span>外向</span><b id="v-social_self">4</b><span>内向</span></div></div>
+          <div class="slider"><p>社交能量（伴侣偏好）：外向社交 vs 内向安静</p><input type="range" min="1" max="7" value="4" oninput="slide('social_partner',this)" /><div class="scale"><span>外向</span><b id="v-social_partner">4</b><span>内向</span></div></div>
+          <div class="sub-nav-btns">
+            <button class="ghost" onclick="subStep(-1)">&larr; 上一组</button>
+            <button class="btn" onclick="subStep(1)">下一组 &rarr;</button>
+          </div>
+          </div>
+
+          <div class="sub-group" data-sub="4">
+          <div class="group"><p>关系边界、节奏与表达方式</p></div>
+          <div class="slider"><p>恋爱中的仪式感（纪念日/惊喜）对我很重要</p><input type="range" min="1" max="7" value="4" oninput="slide('ritual_importance',this)" /><div class="scale"><span>务实</span><b id="v-ritual_importance">4</b><span>浪漫</span></div></div>
+          <div class="slider"><p>我对伴侣拥有亲密异性好友的接受度</p><input type="range" min="1" max="7" value="4" oninput="slide('opposite_friend_accept',this)" /><div class="scale"><span>必须避嫌</span><b id="v-opposite_friend_accept">4</b><span>完全信任</span></div></div>
+          <div class="slider"><p>关系互动中我更倾向：顺从配合 vs 掌握主导</p><input type="range" min="1" max="7" value="4" oninput="slide('relation_control',this)" /><div class="scale"><span>配合</span><b id="v-relation_control">4</b><span>主导</span></div></div>
+          <div class="slider"><p>恋爱相处模式：更喜欢被照顾 vs 更喜欢照顾人</p><input type="range" min="1" max="7" value="4" oninput="slide('care_style',this)" /><div class="scale"><span>被照顾</span><b id="v-care_style">4</b><span>照顾人</span></div></div>
+          <div class="slider"><p>通常倾向于在哪个阶段发生更亲密关系</p><input type="range" min="1" max="7" value="4" oninput="slide('intimacy_timing',this)" /><div class="scale"><span>第一次约会</span><b id="v-intimacy_timing">4</b><span>婚后</span></div></div>
+          <div class="slider"><p>面对冲突：先冷静回避 vs 立刻沟通不过夜</p><input type="range" min="1" max="7" value="4" oninput="slide('conflict_resolution',this)" /><div class="scale"><span>先冷静</span><b id="v-conflict_resolution">4</b><span>马上沟通</span></div></div>
+          <div class="slider"><p>我愿意在社交媒体上频繁秀恩爱</p><input type="range" min="1" max="7" value="4" oninput="slide('pda_willingness',this)" /><div class="scale"><span>不愿意</span><b id="v-pda_willingness">4</b><span>很愿意</span></div></div>
+          <div class="slider"><p>外貌/气质（自身）：阳光亲和 vs 气场强大</p><input type="range" min="1" max="7" value="4" oninput="slide('aura_self',this)" /><div class="scale"><span>阳光亲和</span><b id="v-aura_self">4</b><span>气场强大</span></div></div>
+          <div class="slider"><p>外貌/气质（伴侣偏好）：阳光亲和 vs 气场强大</p><input type="range" min="1" max="7" value="4" oninput="slide('aura_partner',this)" /><div class="scale"><span>阳光亲和</span><b id="v-aura_partner">4</b><span>气场强大</span></div></div>
+          <div class="slider"><p>我看重伴侣在穿搭与外貌打理上的投入</p><input type="range" min="1" max="7" value="4" oninput="slide('appearance_care',this)" /><div class="scale"><span>不看重</span><b id="v-appearance_care">4</b><span>很看重</span></div></div>
+          <div class="sub-nav-btns">
+            <button class="ghost" onclick="subStep(-1)">&larr; 上一组</button>
+          </div>
+
+          <div class="group">
+            <p>交友联系方式（至少填写 1 项）</p>
+            <div class="contact-grid">
+              <div class="field">
+                <label for="wechatInput">微信号</label>
+                <input id="wechatInput" class="input" type="text" placeholder="例如：scu_love_2026" oninput="setContact('wechat',this.value)" />
+              </div>
+              <div class="field">
+                <label for="qqInput">QQ号</label>
+                <input id="qqInput" class="input" type="text" placeholder="5~12位数字" oninput="setContact('qq',this.value)" />
+              </div>
+              <div class="field">
+                <label for="mailInput">备用邮箱</label>
+                <input id="mailInput" class="input" type="email" placeholder="name@example.com" oninput="setContact('mail',this.value)" />
+              </div>
+            </div>
+            <div id="contactHint" class="hint">联系方式仅向你的匹配对象展示。</div>
+          </div>
+          <div class="next"><button id="b3" class="btn" onclick="submitQuiz()" disabled>提交问卷</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main id="done" class="page">
+    <section class="done">
+      <div class="panel">
+        <div class="check">✓</div>
+        <h1>你已加入匹配池</h1>
+        <p class="sub">坐等周四晚 9 点揭晓，匹配结果会发到你的学校邮箱 📮</p>
+        <div id="summary" class="summary"></div>
+        <div id="matchBox" class="status-box">
+          <h4>本周匹配结果</h4>
+          <div id="matchStatus">提交问卷后可刷新查看匹配结果。</div>
+        </div>
+        <div id="narrativeWrap" class="narrative-wrap" style="display:none;">
+          <h4>🤖 AI 匹配分析</h4>
+          <div id="narrativeContent" class="narrative-content"></div>
+          <button id="narrativeBtn" class="btn btn-narrative" type="button" onclick="generateNarrative()">生成 AI 分析</button>
+        </div>
+        <div class="pause-wrap">
+          <div class="pause-label"><b>暂停参与匹配</b><br>开启后本周不参与匹配池</div>
+          <label class="toggle-switch" aria-label="暂停参与匹配">
+            <input type="checkbox" id="pauseToggle" onchange="togglePause(this.checked)" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div id="crushWrap" class="crush-wrap">
+          <h4>💘 心动功能 · Shoot Your Shot</h4>
+          <p class="crush-desc">有特别心仪的人？输入TA的学号，如果TA也选了你，直接配对！暗恋完全保密，TA不会知道。</p>
+          <div class="crush-form">
+            <input id="crushInput" class="input" type="text" placeholder="输入心仪对象的学号" maxlength="64" />
+            <button id="crushSubmitBtn" class="btn btn-crush" type="button" onclick="submitCrush()">提交心动</button>
+          </div>
+          <div id="crushStatus" class="crush-status"></div>
+          <button id="crushDeleteBtn" class="ghost crush-delete" type="button" onclick="deleteCrush()" style="display:none;">取消心动</button>
+        </div>
+        <div id="consentWrap" class="consent-wrap" style="display:none;">
+          <p id="consentTitle" class="consent-title">公开我的联系方式给对方</p>
+          <div id="consentSlider" class="slide-confirm" role="slider" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-disabled="true">
+            <div id="consentFill" class="slide-fill"></div>
+            <span id="consentText" class="slide-text">滑动以公开我的联系方式</span>
+            <button id="consentThumb" class="slide-thumb" type="button" aria-label="滑动确认">›</button>
+          </div>
+          <p id="consentNote" class="consent-note">你同意后，对方可以看到你的联系方式。对方同意后，你才能看到对方的联系方式。</p>
+        </div>
+        <div id="feedbackWrap" class="feedback-wrap" style="display:none;">
+          <p class="feedback-title">匹配一周后，给我们一点反馈吧</p>
+          <p class="feedback-sub">你的反馈会帮助我们优化匹配质量。仅用于运营统计，不会公开展示给其他用户。</p>
+          <div id="feedbackStars" class="star-row" role="group" aria-label="反馈评分">
+            <button class="star-btn" type="button" data-rating="1" aria-label="1星">★</button>
+            <button class="star-btn" type="button" data-rating="2" aria-label="2星">★</button>
+            <button class="star-btn" type="button" data-rating="3" aria-label="3星">★</button>
+            <button class="star-btn" type="button" data-rating="4" aria-label="4星">★</button>
+            <button class="star-btn" type="button" data-rating="5" aria-label="5星">★</button>
+          </div>
+          <label class="feedback-check">
+            <input id="feedbackContacted" type="checkbox" />
+            我已经联系过对方
+          </label>
+          <textarea id="feedbackComment" class="feedback-textarea" placeholder="可选：聊聊这次匹配体验（最多500字）" aria-label="反馈内容"></textarea>
+          <div class="feedback-foot">
+            <p id="feedbackStatus" class="feedback-status">请选择 1-5 星后提交反馈。</p>
+            <button id="feedbackSubmitBtn" class="feedback-btn" type="button" aria-label="提交反馈">提交反馈</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="refreshMatch()" aria-label="刷新匹配结果">刷新匹配结果</button>
+          <button class="btn" onclick="switchPage('home')" aria-label="返回首页">返回首页</button>
+          <button class="ghost" onclick="copyLink()" aria-label="复制页面链接">复制链接</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="mobile-nav" aria-label="页面导航">
+    <button id="navHome" type="button" class="active" onclick="navTo('home')" aria-label="前往首页">首页</button>
+    <button id="navQuiz" type="button" onclick="navTo('quiz')" aria-label="前往问卷">问卷</button>
+    <button id="navDone" type="button" onclick="navTo('done')" aria-label="查看匹配结果">匹配结果</button>
+  </nav>
+
+  <script>
+    document.documentElement.classList.add("js");
+
+    // ── Campus photo slideshow (home + quiz sidebar) ─────────
+    (function() {
+      var PHOTOS = [
+        { src: "/images/campus/campus-1.jpg", label: "江安 · 白石桥" },
+        { src: "/images/campus/campus-2.jpg", label: "江安 · 不高山" },
+        { src: "/images/campus/campus-3.jpg", label: "江安 · 石牌坊" },
+        { src: "/images/campus/campus-4.jpg", label: "江安 · 图书馆" }
+      ];
+      // Home page slideshow
+      var slides = document.querySelectorAll("#campusSlides .campus-slide");
+      var caption = document.getElementById("campusCaption");
+      var cur = 0;
+      if (slides.length < 2) return;
+      setInterval(function() {
+        slides[cur].classList.remove("active");
+        cur = (cur + 1) % slides.length;
+        slides[cur].classList.add("active");
+        if (caption) caption.textContent = PHOTOS[cur].label;
+      }, 4500);
+    })();
+
+    const VALUE_MIN = 8;
+    const VALUE_MAX = 18;
+    const SLIDER_LABELS = {
+      involution_self: ["完全躺平","比较佛系","随缘","适度努力","比较上进","非常卷","极度内卷"],
+      involution_partner: ["完全躺平","比较佛系","随缘","适度努力","比较上进","非常卷","极度内卷"],
+      city_path: ["扎根家乡","偏向回乡","灵活考虑","看机会","偏向大城市","一线城市","北上广深"],
+      marriage_view: ["坚定不婚","倾向不婚","谨慎观望","中性态度","考虑结婚","倾向结婚","非常想结婚"],
+      kindness_priority: ["完全不同意","不太同意","略不同意","中立","略同意","比较同意","完全同意"],
+      ideal_sacrifice: ["完全不同意","不太同意","略不同意","中立","略同意","比较同意","完全同意"],
+      family_priority: ["事业至上","事业优先","偏事业","平衡","偏家庭","家庭优先","家庭至上"],
+      process_orientation: ["纯结果","偏结果","略偏结果","平衡","略偏体验","偏体验","纯体验"],
+      rationality: ["纯感性","偏感性","略偏感性","平衡","略偏理性","偏理性","纯理性"],
+      novelty: ["完全不同意","不太同意","略不同意","中立","略同意","比较同意","完全同意"],
+      schedule: ["深度夜猫子","偏夜型","略偏夜型","中间节律","略偏早型","偏早型","极度早起"],
+      tidy_tolerance: ["完全不能","较难接受","有点介意","还好","基本不介意","比较包容","完全不在意"],
+      dining_style: ["纯食堂","主要食堂","偏食堂","都可以","偏外卖","主要外卖","纯外卖外出"],
+      spicy_level: ["一点不吃","微辣即可","偶尔小辣","中等辣度","比较能吃辣","很能吃辣","无辣不欢"],
+      date_scene: ["纯校园内","偏校园","以校园为主","都可以","偏出去玩","常去市区","必去市中心"],
+      together_time: ["需要很多独处","偏好独处","适度独处","平衡","偏好一起","经常一起","形影不离"],
+      travel_style: ["严格攻略","偏攻略","大致规划","灵活安排","偏随性","比较随性","完全随性"],
+      spending_style: ["极度节俭","比较节俭","偏节俭","收支平衡","偏品质","比较追求品质","极致品质"],
+      hobby_overlap: ["完全互补","偏互补","略偏互补","适度重合","偏重合","比较重合","高度重合"],
+      smoking_self: ["从不","极少","偶尔","社交场合","有时","经常","每天"],
+      smoking_partner: ["完全不接受","很难接受","有点介意","看情况","基本接受","比较接受","完全不介意"],
+      drinking_self: ["滴酒不沾","极少","偶尔","社交场合","有时","经常","每天"],
+      drinking_partner: ["完全不接受","很难接受","有点介意","看情况","基本接受","比较接受","完全不介意"],
+      message_anxiety: ["完全不会","基本不会","偶尔","有点","比较焦虑","很焦虑","非常焦虑"],
+      social_self: ["极度外向","比较外向","偏外向","内外均衡","偏内向","比较内向","极度内向"],
+      social_partner: ["极度外向","比较外向","偏外向","内外均衡","偏内向","比较内向","极度内向"],
+      ritual_importance: ["完全务实","偏务实","略偏务实","平衡","略偏浪漫","偏浪漫","极度浪漫"],
+      opposite_friend_accept: ["必须避嫌","比较介意","有点介意","看情况","基本信任","比较信任","完全信任"],
+      relation_control: ["完全配合","偏配合","略偏配合","平等","略偏主导","偏主导","完全主导"],
+      care_style: ["极喜欢被照顾","偏被照顾","略偏被照顾","双向均衡","略偏照顾人","偏照顾人","极喜欢照顾人"],
+      intimacy_timing: ["第一次约会","几次约会后","确定关系后","深入了解后","同居后","订婚后","婚后"],
+      conflict_resolution: ["完全冷静","偏冷静","略偏冷静","看情况","略偏沟通","偏即时沟通","立刻沟通"],
+      pda_willingness: ["坚决不","不太愿意","偶尔可以","看心情","比较愿意","很愿意","随时秀"],
+      aura_self: ["纯阳光","偏阳光","略偏阳光","中间","略偏气场","偏气场","纯气场"],
+      aura_partner: ["纯阳光","偏阳光","略偏阳光","中间","略偏气场","偏气场","纯气场"],
+      appearance_care: ["完全不看重","不太看重","略不看重","一般","略看重","比较看重","非常看重"]
+    };
+    const DEFAULT_SLIDERS = {
+      involution_self: 0,
+      involution_partner: 0,
+      city_path: 0,
+      marriage_view: 0,
+      kindness_priority: 0,
+      ideal_sacrifice: 0,
+      family_priority: 0,
+      process_orientation: 0,
+      rationality: 0,
+      novelty: 0,
+      schedule: 0,
+      tidy_tolerance: 0,
+      dining_style: 0,
+      spicy_level: 0,
+      date_scene: 0,
+      together_time: 0,
+      travel_style: 0,
+      spending_style: 0,
+      hobby_overlap: 0,
+      smoking_self: 0,
+      smoking_partner: 0,
+      drinking_self: 0,
+      drinking_partner: 0,
+      message_anxiety: 0,
+      social_self: 0,
+      social_partner: 0,
+      ritual_importance: 0,
+      opposite_friend_accept: 0,
+      relation_control: 0,
+      care_style: 0,
+      intimacy_timing: 0,
+      conflict_resolution: 0,
+      pda_willingness: 0,
+      aura_self: 0,
+      aura_partner: 0,
+      appearance_care: 0
+    };
+    const SLIDER_TOTAL = Object.keys(DEFAULT_SLIDERS).length;
+    const UNIVERSITIES = [
+      { id:"scu", name:"四川大学", short:"SCU", defaultDomain:"stu.scu.edu.cn", campuses:["望江","江安","华西"] },
+      { id:"uestc", name:"电子科技大学", short:"UESTC", defaultDomain:"std.uestc.edu.cn", campuses:["清水河","沙河"] },
+      { id:"swjtu", name:"西南交通大学", short:"SWJTU", defaultDomain:"my.swjtu.edu.cn", campuses:["犀浦","九里","峨眉"] },
+      { id:"swufe", name:"西南财经大学", short:"SWUFE", defaultDomain:"stu.swufe.edu.cn", campuses:["柳林","光华"] },
+      { id:"sicau", name:"四川农业大学", short:"SICAU", defaultDomain:"stu.sicau.edu.cn", campuses:["成都","雅安","都江堰"] },
+      { id:"swun", name:"西南民族大学", short:"SWUN", defaultDomain:"stu.swun.edu.cn", campuses:["航空港","太平园"] },
+      { id:"cdut", name:"成都理工大学", short:"CDUT", defaultDomain:"stu.cdut.edu.cn", campuses:["成都","宜宾"] },
+      { id:"swpu", name:"西南石油大学", short:"SWPU", defaultDomain:"stu.swpu.edu.cn", campuses:["成都","南充"] },
+      { id:"cdu", name:"成都大学", short:"CDU", defaultDomain:"stu.cdu.edu.cn", campuses:["十陵"] },
+      { id:"sicnu", name:"四川师范大学", short:"SICNU", defaultDomain:"stu.sicnu.edu.cn", campuses:["狮子山","成龙"] },
+      { id:"xhu", name:"西华大学", short:"XHU", defaultDomain:"stu.xhu.edu.cn", campuses:["郫都","彭州"] }
+    ];
+
+    const state = {
+      authMode: "dev",
+      emailOtp: { ttlSeconds: 300, resendCooldownSeconds: 60 },
+      auth: { verified:false, sid:"", name:"", mail:"" },
+      selectedUniversity: null,
+      gender:null, seeking:null, grade:null, campus:null,
+      seekingGrades:[],
+      values:[],
+      sliders: { ...DEFAULT_SLIDERS },
+      contact: { wechat:"", qq:"", mail:"" },
+      currentMatch: null,
+      announcements: [],
+      feedback: {
+        rating: 0,
+        contacted: false,
+        comment: ""
+      }
+    };
+    let step = 1;
+    let contactTouched = false;
+    let otpCooldownLeft = 0;
+    let otpCooldownTimer = null;
+    let draftRestoreChecked = false;
+    const touched = new Set();
+    const sliderTotalEl = document.getElementById("sliderTotal");
+    if (sliderTotalEl) sliderTotalEl.textContent = String(SLIDER_TOTAL);
+
+    const DRAFT_KEY = "scu_quiz_draft";
+    const CLOSED_ANNOUNCEMENTS_KEY = "scu_closed_announcements";
+    const DRAFT_VERSION = 1;
+    const API_TIMEOUT_MS = 10000;
+    let apiPendingCount = 0;
+    let consentSubmitting = false;
+    let consentDragState = {
+      active: false,
+      pointerId: null,
+      startX: 0,
+      startLeft: 0,
+      left: 0,
+      max: 0
+    };
+
+    function hasDraftProgress() {
+      return (
+        Boolean(state.gender || state.seeking || state.grade || state.campus) ||
+        state.values.length > 0 ||
+        touched.size > 0 ||
+        Boolean(state.contact.wechat || state.contact.qq || state.contact.mail) ||
+        step > 1
+      );
+    }
+
+    function clearDraft() {
+      try {
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch (_) {}
+    }
+
+    function saveDraft() {
+      try {
+        if (!hasDraftProgress()) {
+          clearDraft();
+          return;
+        }
+        const payload = {
+          version: DRAFT_VERSION,
+          step,
+          gender: state.gender,
+          seeking: state.seeking,
+          grade: state.grade,
+          campus: state.campus,
+          seekingGrades: [...state.seekingGrades],
+          values: [...state.values],
+          sliders: { ...state.sliders },
+          touched: [...touched],
+          contact: { ...state.contact },
+          updatedAt: Date.now()
+        };
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+      } catch (_) {}
+    }
+
+    function readDraft() {
+      try {
+        const raw = sessionStorage.getItem(DRAFT_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || parsed.version !== DRAFT_VERSION) return null;
+        return parsed;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function showToast(message, type = "info", duration = 3000) {
+      const wrap = document.getElementById("toastWrap");
+      if (!wrap) return;
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      const msg = document.createElement("div");
+      msg.className = "toast-msg";
+      msg.textContent = String(message || "");
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "toast-close";
+      close.textContent = "×";
+      close.setAttribute("aria-label", "关闭通知");
+      toast.appendChild(msg);
+      toast.appendChild(close);
+      wrap.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add("show"));
+      const remove = () => {
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+        setTimeout(() => toast.remove(), 240);
+      };
+      const timer = setTimeout(remove, Math.max(600, Number(duration) || 3000));
+      close.addEventListener("click", () => {
+        clearTimeout(timer);
+        remove();
+      });
+    }
+
+    function updateNetworkBanner() {
+      const banner = document.getElementById("netBanner");
+      if (!banner) return;
+      banner.classList.toggle("show", !navigator.onLine);
+    }
+
+    function setGlobalLoading(visible) {
+      const el = document.getElementById("globalLoading");
+      if (!el) return;
+      el.classList.toggle("show", Boolean(visible));
+    }
+
+    function setNavActive(id) {
+      const map = { home: "navHome", quiz: "navQuiz", done: "navDone" };
+      Object.values(map).forEach((btnId) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.classList.toggle("active", btnId === map[id]);
+      });
+    }
+
+    function focusPageTitle(pageId) {
+      const page = document.getElementById(pageId);
+      if (!page) return;
+      const title = page.querySelector("h1, h2");
+      if (!title) return;
+      title.setAttribute("tabindex", "-1");
+      title.focus({ preventScroll: true });
+    }
+
+    function switchPage(id){
+      document.querySelectorAll(".page").forEach((x) => x.classList.remove("active"));
+      const page = document.getElementById(id);
+      if (page) page.classList.add("active");
+      setNavActive(id);
+      window.scrollTo({ top:0, behavior:"smooth" });
+      setTimeout(() => focusPageTitle(id), 120);
+    }
+
+    function startQuiz(preset = null, keepCurrentState = false){
+      if (!keepCurrentState) {
+        resetQuiz(false, false);
+      }
+      if (preset) applyQuizPreset(preset);
+      switchPage("quiz");
+      saveDraft();
+    }
+
+    function navTo(target) {
+      if (target === "home") {
+        switchPage("home");
+        return;
+      }
+      if (target === "quiz") {
+        if (!state.auth.verified) {
+          showToast("请先完成认证，再进入问卷。", "info");
+          switchPage("home");
+          return;
+        }
+        startQuiz(null, hasDraftProgress());
+        return;
+      }
+      if (target === "done") {
+        switchPage("done");
+        refreshMatch();
+        loadCrushStatus();
+        loadPauseStatus();
+      }
+    }
+
+    function goBack(){ if(step===1){ switchPage("home"); } else { toStep(step-1); } }
+
+    function translateError(code, detail) {
+      const map = {
+        email_not_scu_domain: "邮箱域名未通过校验，请使用学校邮箱",
+        student_id_invalid: "学号格式不正确",
+        name_required: "姓名不能为空",
+        dev_login_disabled: "当前是 CAS 模式，开发登录已关闭",
+        email_already_bound_to_other_student_id: "该邮箱已绑定其他学号，请检查是否填错学号",
+        unauthorized: "未登录或登录已过期，请重新认证",
+        ticket_missing: "CAS 回调缺少票据 ticket",
+        cas_state_invalid: "CAS 回调状态校验失败，请重新发起认证",
+        cas_base_url_missing: "CAS 配置缺失：服务端未配置 CAS_BASE_URL",
+        auth_mode_not_cas: "当前不是 CAS 模式",
+        email_otp_disabled: "当前未启用邮箱验证码认证",
+        otp_too_frequent: "验证码发送太频繁，请稍后重试",
+        otp_invalid_format: "验证码格式不正确，应为 6 位数字",
+        otp_not_found: "未找到验证码，请先发送验证码",
+        otp_already_used: "该验证码已使用，请重新获取",
+        otp_expired: "验证码已过期，请重新获取",
+        otp_too_many_attempts: "验证码尝试次数过多，请重新获取",
+        otp_invalid: "验证码错误",
+        otp_email_send_failed: "验证码发送失败，请检查 SMTP 配置",
+        values_count_invalid: "已选标签数量不符合要求",
+        sliders_required: "量表题数据缺失",
+        sliders_too_few: "量表题填写不完整",
+        slider_value_invalid: "量表题分值无效",
+        feedback_match_id_invalid: "反馈提交失败：匹配编号无效",
+        feedback_rating_invalid: "反馈提交失败：评分需在 1-5 星",
+        feedback_comment_too_long: "反馈文字过长，最多 500 字",
+        feedback_match_not_found: "反馈提交失败：未找到匹配记录",
+        feedback_forbidden: "反馈提交失败：你不能提交这条匹配",
+        feedback_not_eligible: "匹配满 7 天后才可提交反馈",
+        csrf_invalid: "请求校验失败，请刷新页面后重试",
+        confirm_token_required: "请先进行二次确认",
+        confirm_token_invalid: "确认令牌无效或已过期，请重试",
+        confirm_action_invalid: "确认操作类型无效",
+        server_error: "服务器内部错误"
+      };
+      const base = map[code] || code || "未知错误";
+      return detail ? `${base}（${detail}）` : base;
+    }
+
+    function getCookieValue(name) {
+      const escaped = String(name || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+      return match ? decodeURIComponent(match[1]) : "";
+    }
+
+    async function api(url, options = {}) {
+      const init = { credentials: "include", ...options };
+      const headers = { ...(init.headers || {}) };
+      const method = String(init.method || "GET").toUpperCase();
+      if (method === "POST" && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+      if (method === "POST" && !Object.prototype.hasOwnProperty.call(headers, "X-CSRF-Token")) {
+        const csrf = getCookieValue("rong_csrf");
+        if (csrf) headers["X-CSRF-Token"] = csrf;
+      }
+      init.headers = headers;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort("timeout"), API_TIMEOUT_MS);
+      init.signal = controller.signal;
+      apiPendingCount += 1;
+      setGlobalLoading(true);
+      try {
+        const res = await fetch(url, init);
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
+        if (!res.ok) {
+          const message = translateError(data.error || `HTTP_${res.status}`, data.detail);
+          if (data.retryAfterSeconds) {
+            throw new Error(`${message}；请 ${data.retryAfterSeconds} 秒后再试`);
+          }
+          if (data.acceptedDomains && Array.isArray(data.acceptedDomains)) {
+            throw new Error(`${message}；当前允许域名：${data.acceptedDomains.join(" / ")}`);
+          }
+          throw new Error(message);
+        }
+        return data;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          throw new Error(`请求超时（${Math.floor(API_TIMEOUT_MS / 1000)}秒），请检查网络后重试`);
+        }
+        if (err instanceof Error && err.message) {
+          throw err;
+        }
+        throw new Error("网络请求失败，请检查网络连接");
+      } finally {
+        clearTimeout(timeoutId);
+        apiPendingCount = Math.max(0, apiPendingCount - 1);
+        setGlobalLoading(apiPendingCount > 0);
+      }
+    }
+
+    function homeEl(id) {
+      return document.getElementById(id);
+    }
+
+    function initUniversitySelector() {
+      const sel = homeEl("homeUniversity");
+      if (!sel) return;
+      UNIVERSITIES.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.name + "（" + u.short + "）";
+        sel.appendChild(opt);
+      });
+    }
+
+    function onUniversityChange() {
+      const sel = homeEl("homeUniversity");
+      const uniId = sel ? sel.value : "";
+      const uni = UNIVERSITIES.find(u => u.id === uniId) || null;
+      state.selectedUniversity = uni;
+
+      // Update campus dropdown
+      const campusSel = homeEl("homeCampus");
+      if (campusSel) {
+        campusSel.innerHTML = "";
+        if (!uni) {
+          campusSel.innerHTML = '<option value="">先选择学校</option>';
+        } else {
+          campusSel.innerHTML = '<option value="">选择校区</option>';
+          uni.campuses.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.textContent = c + "校区";
+            campusSel.appendChild(opt);
+          });
+          const other = document.createElement("option");
+          other.value = "其他";
+          other.textContent = "其他";
+          campusSel.appendChild(other);
+        }
+      }
+
+      // Update email suffix
+      const suffixEl = homeEl("homeMailSuffix");
+      if (suffixEl) {
+        suffixEl.textContent = uni ? "@" + uni.defaultDomain : "@请先选择学校";
+      }
+
+      // Update quiz campus buttons
+      const quizOpts = document.getElementById("quizCampusOpts");
+      if (quizOpts && uni) {
+        quizOpts.innerHTML = "";
+        uni.campuses.forEach(c => {
+          const btn = document.createElement("button");
+          btn.className = "opt";
+          btn.setAttribute("data-k", "campus");
+          btn.setAttribute("data-v", c);
+          btn.textContent = c;
+          btn.onclick = function() { pick("campus", c, this); };
+          quizOpts.appendChild(btn);
+        });
+        const otherBtn = document.createElement("button");
+        otherBtn.className = "opt";
+        otherBtn.setAttribute("data-k", "campus");
+        otherBtn.setAttribute("data-v", "其他");
+        otherBtn.textContent = "其他";
+        otherBtn.onclick = function() { pick("campus", "其他", this); };
+        quizOpts.appendChild(otherBtn);
+      }
+    }
+
+    function getHomePayload() {
+      return {
+        studentId: String(homeEl("homeStudentId")?.value || "").trim(),
+        name: String(homeEl("homeName")?.value || "").trim(),
+        email: (() => { const v = String(homeEl("homeEmail")?.value || "").trim(); const suffix = state.selectedUniversity ? state.selectedUniversity.defaultDomain : ""; return v && !v.includes("@") && suffix ? v + "@" + suffix : v; })(),
+        campus: String(homeEl("homeCampus")?.value || "").trim(),
+        grade: String(homeEl("homeGrade")?.value || "").trim(),
+        major: String(homeEl("homeMajor")?.value || "").trim(),
+        code: String(homeEl("homeCode")?.value || "").trim()
+      };
+    }
+
+    function setHomeHint(msg, isErr = false) {
+      const hint = homeEl("homeAuthHint");
+      if (!hint) return;
+      hint.className = isErr ? "auth-hint err" : "auth-hint";
+      hint.textContent = msg;
+    }
+
+    function updateOtpSendBtn() {
+      const btn = homeEl("homeSendCodeBtn");
+      if (!btn) return;
+      btn.disabled = otpCooldownLeft > 0;
+      btn.textContent = otpCooldownLeft > 0 ? `${otpCooldownLeft}s` : "发送验证码";
+    }
+
+    function startOtpCooldown(seconds) {
+      otpCooldownLeft = Math.max(0, Number(seconds || 0));
+      if (otpCooldownTimer) {
+        clearInterval(otpCooldownTimer);
+        otpCooldownTimer = null;
+      }
+      updateOtpSendBtn();
+      if (!otpCooldownLeft) return;
+      otpCooldownTimer = setInterval(() => {
+        otpCooldownLeft -= 1;
+        if (otpCooldownLeft <= 0) {
+          otpCooldownLeft = 0;
+          clearInterval(otpCooldownTimer);
+          otpCooldownTimer = null;
+        }
+        updateOtpSendBtn();
+      }, 1000);
+    }
+
+    function updateHomeModeUI() {
+      const modeTip = homeEl("homeModeTip");
+      const codeBlock = homeEl("homeCodeBlock");
+      const submitBtn = homeEl("homeSubmitBtn");
+      const sendBtn = homeEl("homeSendCodeBtn");
+      if (!modeTip || !codeBlock || !submitBtn || !sendBtn) return;
+
+      if (state.authMode === "cas") {
+        modeTip.textContent = "将跳转学校统一认证，认证完成后自动返回。";
+        codeBlock.style.display = "none";
+        submitBtn.textContent = state.auth.verified ? "已认证，进入问卷" : "前往统一认证";
+      } else if (state.authMode === "email") {
+        modeTip.textContent = "验证码将发送到你的学校邮箱，输入后即可认证。";
+        codeBlock.style.display = "block";
+        submitBtn.textContent = state.auth.verified ? "已认证，进入问卷" : "验证并进入问卷";
+      } else {
+        modeTip.textContent = "开发模式：输入学号/昵称/邮箱后可直接登录。";
+        codeBlock.style.display = "none";
+        submitBtn.textContent = state.auth.verified ? "已认证，进入问卷" : "开发模式登录";
+      }
+
+      sendBtn.style.display = state.authMode === "email" ? "inline-flex" : "none";
+      updateOtpSendBtn();
+    }
+
+    function applyQuizPreset(preset) {
+      if (!preset) return;
+      if (preset.grade) {
+        const gradeBtn = document.querySelector(`[data-k="grade"][data-v="${preset.grade}"]`);
+        if (gradeBtn) pick("grade", preset.grade, gradeBtn);
+      }
+      if (preset.campus) {
+        const campusBtn = document.querySelector(`[data-k="campus"][data-v="${preset.campus}"]`);
+        if (campusBtn) pick("campus", preset.campus, campusBtn);
+      }
+    }
+
+    function applySelectionState() {
+      document.querySelectorAll(".opt").forEach((btn) => {
+        const key = btn.dataset.k;
+        if (key) {
+          const selected = state[key] === btn.dataset.v;
+          btn.classList.toggle("sel", selected);
+          btn.setAttribute("aria-pressed", selected ? "true" : "false");
+        }
+        // 恢复 seekingGrades 多选状态
+        if (btn.dataset.sg) {
+          btn.classList.toggle("sel", state.seekingGrades.includes(btn.dataset.sg));
+        }
+      });
+      // 校友年级锁定
+      if (state.grade === "已毕业校友") {
+        state.seekingGrades = ["已毕业校友"];
+        document.querySelectorAll("#seekingGradesOpts [data-sg]").forEach((btn) => {
+          btn.classList.toggle("sel", btn.dataset.sg === "已毕业校友");
+          btn.disabled = true;
+        });
+      }
+      const selectedValues = new Set(state.values);
+      document.querySelectorAll(".value").forEach((btn) => {
+        const selected = selectedValues.has(btn.textContent.trim());
+        btn.classList.toggle("sel", selected);
+        btn.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      const lock = state.values.length >= VALUE_MAX;
+      document.querySelectorAll(".value").forEach((btn) => {
+        if (!btn.classList.contains("sel")) btn.classList.toggle("off", lock);
+      });
+      document.getElementById("count").textContent = `已选择 ${state.values.length} / 至少${VALUE_MIN}（最多${VALUE_MAX}）`;
+      document.getElementById("b2").disabled = state.values.length < VALUE_MIN;
+    }
+
+    function setAuthUI() {
+      const badge = document.getElementById("authBadge");
+      const note = document.getElementById("authNote");
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (state.auth.verified) {
+        badge.className = "badge ok";
+        badge.textContent = `已认证 · ${state.auth.mail}`;
+        note.textContent = "认证完成，可继续填写问卷。";
+        logoutBtn.style.display = "inline-flex";
+        if (homeEl("homeName") && !homeEl("homeName").value) homeEl("homeName").value = state.auth.name || "";
+        if (homeEl("homeStudentId") && !homeEl("homeStudentId").value) homeEl("homeStudentId").value = state.auth.sid || "";
+        if (homeEl("homeEmail") && !homeEl("homeEmail").value) homeEl("homeEmail").value = state.auth.mail || "";
+      } else {
+        badge.className = "badge wait";
+        badge.textContent = "未认证";
+        logoutBtn.style.display = "none";
+        if (state.authMode === "cas") {
+          note.textContent = “当前为 CAS 模式，点击「前往认证」后会跳转到学校统一认证系统。”;
+          setHomeHint("当前为 CAS 模式，点击下方按钮即可跳转学校统一认证。");
+        } else if (state.authMode === "email") {
+          note.textContent = "当前为邮箱验证码模式，点击“前往认证”会向你的学校邮箱发送 6 位验证码。";
+          setHomeHint("请填写邮箱并发送验证码，验证后自动进入问卷。");
+        } else {
+          note.textContent = "当前为开发模式，点击“前往认证”后会使用学号/邮箱模拟认证。";
+          setHomeHint("开发模式下，填写后可直接登录进入问卷。");
+        }
+      }
+      checkStep1Ready();
+      updateHomeModeUI();
+      if (state.auth.verified) {
+        setHomeHint(`当前已认证：${state.auth.mail}。你可以直接进入问卷。`);
+      }
+    }
+
+    function promptResumeDraft() {
+      return new Promise((resolve) => {
+        const mask = document.getElementById("resumeMask");
+        const continueBtn = document.getElementById("resumeContinueBtn");
+        const restartBtn = document.getElementById("resumeRestartBtn");
+        if (!mask || !continueBtn || !restartBtn) {
+          resolve("restart");
+          return;
+        }
+        mask.classList.add("show");
+        const cleanup = () => {
+          mask.classList.remove("show");
+          continueBtn.removeEventListener("click", onContinue);
+          restartBtn.removeEventListener("click", onRestart);
+        };
+        const onContinue = () => {
+          cleanup();
+          resolve("continue");
+        };
+        const onRestart = () => {
+          cleanup();
+          resolve("restart");
+        };
+        continueBtn.addEventListener("click", onContinue);
+        restartBtn.addEventListener("click", onRestart);
+      });
+    }
+
+    async function restoreDraftOnLoad() {
+      const draft = readDraft();
+      if (!draft) return;
+      const choice = await promptResumeDraft();
+      if (choice !== "continue") {
+        clearDraft();
+        resetQuiz(false, true);
+        showToast("已清空历史问卷，可重新开始。", "info");
+        return;
+      }
+      state.gender = draft.gender || null;
+      state.seeking = draft.seeking || null;
+      state.grade = draft.grade || null;
+      state.campus = draft.campus || null;
+      state.seekingGrades = Array.isArray(draft.seekingGrades) ? draft.seekingGrades : [];
+      state.values = Array.isArray(draft.values) ? draft.values.slice(0, VALUE_MAX) : [];
+      state.sliders = { ...DEFAULT_SLIDERS, ...(draft.sliders || {}) };
+      state.contact = {
+        wechat: String(draft.contact?.wechat || "").trim(),
+        qq: String(draft.contact?.qq || "").trim(),
+        mail: String(draft.contact?.mail || "").trim()
+      };
+      touched.clear();
+      if (Array.isArray(draft.touched)) {
+        draft.touched.forEach((key) => {
+          if (Object.prototype.hasOwnProperty.call(DEFAULT_SLIDERS, key)) touched.add(key);
+        });
+      }
+      if (touched.size === 0) {
+        Object.keys(DEFAULT_SLIDERS).forEach((key) => {
+          if (Number(state.sliders[key]) !== 4) touched.add(key);
+        });
+      }
+      applySelectionState();
+      Object.keys(DEFAULT_SLIDERS).forEach((k) => updateScoreUI(k, state.sliders[k]));
+      document.getElementById("wechatInput").value = state.contact.wechat;
+      document.getElementById("qqInput").value = state.contact.qq;
+      document.getElementById("mailInput").value = state.contact.mail;
+      contactTouched = Boolean(state.contact.wechat || state.contact.qq || state.contact.mail);
+      refreshSubmitState(contactTouched);
+      const restoreStep = Math.max(1, Math.min(3, Number(draft.step || 1)));
+      startQuiz(null, true);
+      toStep(restoreStep);
+      showToast("已恢复未完成问卷。", "success");
+    }
+
+    async function loadConfigAndUser() {
+      const query = new URLSearchParams(location.search);
+      if (query.get("auth") === "ok") {
+        showToast("CAS 认证成功", "success");
+        history.replaceState({}, "", location.pathname);
+      } else if (query.get("auth") === "error") {
+        const reason = query.get("reason") || "unknown";
+        showToast(`CAS 认证失败：${decodeURIComponent(reason)}`, "error");
+        history.replaceState({}, "", location.pathname);
+      }
+      try {
+        const cfg = await api("/api/config");
+        state.authMode = cfg.authMode || "dev";
+        if (cfg.emailOtp) {
+          state.emailOtp = {
+            ttlSeconds: Number(cfg.emailOtp.ttlSeconds || 300),
+            resendCooldownSeconds: Number(cfg.emailOtp.resendCooldownSeconds || 60)
+          };
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message) {
+          showToast(`配置加载失败：${err.message}`, "warning");
+        }
+      }
+      try {
+        const me = await api("/api/me");
+        if (me && me.authenticated) {
+          state.auth.verified = true;
+          state.auth.sid = me.user.studentId;
+          state.auth.name = me.user.name;
+          state.auth.mail = me.user.email;
+          // 校友邮箱自动锁定年级为"已毕业校友"
+          if (state.auth.mail && state.auth.mail.endsWith("@alu.scu.edu.cn")) {
+            const gradeBtn = document.querySelector('[data-k="grade"][data-v="已毕业校友"]');
+            if (gradeBtn) pick("grade", "已毕业校友", gradeBtn);
+          }
+        }
+      } catch (err) {
+        if (err instanceof Error && /超时|网络/.test(err.message || "")) {
+          showToast(`用户状态获取失败：${err.message}`, "warning");
+        }
+        state.auth = { verified:false, sid:"", name:"", mail:"" };
+      }
+      setAuthUI();
+      if (location.protocol === "file:") {
+        const note = document.getElementById("authNote");
+        note.textContent = "你正在直接打开本地文件，无法连接认证接口。请先运行 node server.js，再访问 http://localhost:3000";
+      }
+      if (!draftRestoreChecked) {
+        draftRestoreChecked = true;
+        await restoreDraftOnLoad();
+      }
+      await loadAnnouncements();
+    }
+
+    async function sendHomeOtp() {
+      const payload = getHomePayload();
+      if (!payload.studentId || !payload.name || !payload.email) {
+        setHomeHint("请先填写昵称、学号和学校邮箱后再发送验证码。", true);
+        return;
+      }
+      try {
+        const result = await api("/api/auth/email/request-code", {
+          method: "POST",
+          body: JSON.stringify({
+            studentId: payload.studentId,
+            name: payload.name,
+            email: payload.email
+          })
+        });
+        const ttl = Number(result.expiresInSeconds || state.emailOtp.ttlSeconds || 300);
+        setHomeHint(`验证码已发送，请在 ${Math.max(1, Math.ceil(ttl / 60))} 分钟内完成验证。`);
+        showToast("验证码已飞往你的学校邮箱 💌", "success");
+        startOtpCooldown(state.emailOtp.resendCooldownSeconds || 60);
+      } catch (err) {
+        setHomeHint(`验证码发送失败：${err.message}`, true);
+        showToast(`验证码发送失败：${err.message}`, "error");
+      }
+    }
+
+    async function submitHomeAuth() {
+      const payload = getHomePayload();
+      if (state.auth.verified) {
+        startQuiz({ campus: payload.campus, grade: payload.grade });
+        return;
+      }
+      if (!payload.studentId || !payload.name || !payload.email) {
+        setHomeHint("请先填写昵称、学号、学校邮箱。", true);
+        return;
+      }
+      try {
+        if (state.authMode === "cas") {
+          window.location.href = "/auth/cas/login";
+          return;
+        }
+        if (state.authMode === "email") {
+          if (!payload.code || !/^\d{6}$/.test(payload.code)) {
+            setHomeHint("请输入 6 位数字验证码。", true);
+            return;
+          }
+          await api("/api/auth/email/verify-code", {
+            method: "POST",
+            body: JSON.stringify({
+              studentId: payload.studentId,
+              name: payload.name,
+              email: payload.email,
+              code: payload.code
+            })
+          });
+        } else {
+          await api("/api/auth/dev-login", {
+            method: "POST",
+            body: JSON.stringify({
+              studentId: payload.studentId,
+              name: payload.name,
+              email: payload.email
+            })
+          });
+        }
+        await loadConfigAndUser();
+        setHomeHint("认证成功，正在进入问卷。");
+        showToast("认证成功，欢迎回来。", "success");
+        startQuiz({ campus: payload.campus, grade: payload.grade });
+      } catch (err) {
+        setHomeHint(`认证失败：${err.message}`, true);
+        showToast(`认证失败：${err.message}`, "error");
+      }
+    }
+
+    async function verifyScuAuth(){
+      const payload = getHomePayload();
+      if (payload.studentId && payload.name && payload.email) {
+        await submitHomeAuth();
+        return;
+      }
+      setHomeHint("请先在首页认证卡片完成信息填写。", true);
+      switchPage("home");
+    }
+
+    async function logoutAuth() {
+      try {
+        if (state.authMode === "cas") {
+          window.location.href = "/auth/cas/logout";
+          return;
+        }
+        await api("/api/auth/logout", { method: "POST", body: "{}" });
+        state.auth = { verified:false, sid:"", name:"", mail:"" };
+        setAuthUI();
+        showToast("已退出登录", "info");
+      } catch (err) {
+        showToast(`退出失败：${err.message}`, "error");
+      }
+    }
+
+    function pick(k,v,el){
+      state[k]=v;
+      document.querySelectorAll(`[data-k="${k}"]`).forEach((btn) => {
+        const selected = btn.dataset.v === v;
+        btn.classList.toggle("sel", selected);
+        btn.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      // 校友邮箱自动锁定年级后，同步锁定希望对方年级为"已毕业校友"
+      if (k === "grade" && v === "已毕业校友") {
+        state.seekingGrades = ["已毕业校友"];
+        document.querySelectorAll("#seekingGradesOpts [data-sg]").forEach((btn) => {
+          const isSel = btn.dataset.sg === "已毕业校友";
+          btn.classList.toggle("sel", isSel);
+          btn.disabled = true;
+        });
+      } else if (k === "grade") {
+        // 切换到非校友年级时，解锁希望对方年级
+        document.querySelectorAll("#seekingGradesOpts [data-sg]").forEach((btn) => { btn.disabled = false; });
+        // 清除已毕业校友的自动选中（如有）
+        if (state.seekingGrades.length === 1 && state.seekingGrades[0] === "已毕业校友") {
+          state.seekingGrades = [];
+          document.querySelectorAll("#seekingGradesOpts [data-sg]").forEach((btn) => btn.classList.remove("sel"));
+        }
+      }
+      checkStep1Ready();
+      saveDraft();
+    }
+
+    function toggleSeekingGrade(v, el) {
+      const idx = state.seekingGrades.indexOf(v);
+      if (idx > -1) {
+        state.seekingGrades.splice(idx, 1);
+        el.classList.remove("sel");
+      } else {
+        state.seekingGrades.push(v);
+        el.classList.add("sel");
+      }
+      saveDraft();
+    }
+
+    function checkStep1Ready(){
+      const ok = state.auth.verified && state.gender && state.seeking && state.grade && state.campus;
+      document.getElementById("b1").disabled = !ok;
+    }
+
+    function pickValue(v,el){
+      const i=state.values.indexOf(v);
+      if(i>-1){
+        state.values.splice(i,1);
+        el.classList.remove("sel");
+        el.setAttribute("aria-pressed", "false");
+      }
+      else if(state.values.length<VALUE_MAX){
+        state.values.push(v);
+        el.classList.add("sel");
+        el.setAttribute("aria-pressed", "true");
+      }
+      const lock=state.values.length>=VALUE_MAX;
+      document.querySelectorAll(".value").forEach(btn=>{ if(!btn.classList.contains("sel")) btn.classList.toggle("off",lock); });
+      document.getElementById("count").textContent=`已选择 ${state.values.length} / 至少${VALUE_MIN}（最多${VALUE_MAX}）`;
+      document.getElementById("b2").disabled=state.values.length<VALUE_MIN;
+      saveDraft();
+    }
+
+    function updateScoreUI(k, val) {
+      const raw = Number(val);
+      const unset = !raw || raw < 1;
+      const num = unset ? 0 : Math.max(1, Math.min(7, raw));
+      const valueEl = document.getElementById(`v-${k}`);
+      if (valueEl) {
+        valueEl.textContent = unset ? "-" : String(num);
+      }
+      const sliderBox = valueEl ? valueEl.closest(".slider") : null;
+      if (!sliderBox) return;
+      sliderBox.querySelectorAll(".score-btn").forEach((btn) => {
+        const active = !unset && Number(btn.dataset.score) === num;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      const hiddenRange = sliderBox.querySelector('input[type="range"]');
+      if (hiddenRange) hiddenRange.value = unset ? "4" : String(num);
+      const labelEl = sliderBox.querySelector(".slider-label");
+      if (labelEl) {
+        if (unset) {
+          labelEl.textContent = "请选择";
+          labelEl.style.color = "var(--sub)";
+        } else {
+          const labels = SLIDER_LABELS[k];
+          labelEl.textContent = labels ? labels[num - 1] : String(num);
+          labelEl.style.color = "";
+        }
+      }
+    }
+
+    function setScore(k, val, markTouched = true) {
+      const num = Math.max(1, Math.min(7, Number(val) || 4));
+      state.sliders[k] = num;
+      if (markTouched) touched.add(k);
+      updateScoreUI(k, num);
+      refreshSubmitState();
+      saveDraft();
+    }
+
+    function initScorePickers() {
+      document.querySelectorAll("#s3 .slider").forEach((box) => {
+        const valueEl = box.querySelector('b[id^="v-"]');
+        const range = box.querySelector('input[type="range"]');
+        if (!valueEl || !range || box.querySelector(".score-picker")) return;
+        const key = valueEl.id.replace("v-", "");
+
+        const picker = document.createElement("div");
+        picker.className = "score-picker";
+        const qTitle = box.querySelector("p")?.textContent?.trim() || "量表题";
+        for (let n = 1; n <= 7; n += 1) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "score-btn";
+          btn.dataset.score = String(n);
+          btn.textContent = String(n);
+          btn.setAttribute("aria-label", `${qTitle}，评分 ${n}`);
+          btn.setAttribute("aria-pressed", "false");
+          btn.addEventListener("click", () => setScore(key, n, true));
+          picker.appendChild(btn);
+        }
+        const scale = box.querySelector(".scale");
+        if (scale) box.insertBefore(picker, scale);
+        else box.appendChild(picker);
+
+        const labelDiv = document.createElement("div");
+        labelDiv.className = "slider-label";
+        const initVal = state.sliders[key] || 0;
+        const labels = SLIDER_LABELS[key];
+        if (!initVal) {
+          labelDiv.textContent = "请选择";
+          labelDiv.style.color = "var(--sub)";
+          labelDiv.style.opacity = "0.45";
+        } else {
+          labelDiv.textContent = labels ? labels[initVal - 1] : String(initVal);
+        }
+        picker.insertAdjacentElement("afterend", labelDiv);
+      });
+      Object.keys(state.sliders).forEach((k) => updateScoreUI(k, state.sliders[k]));
+    }
+
+    function fill() {}
+    function slide(k,el){ setScore(k, Number(el.value), true); }
+
+    function setContact(k, raw){
+      contactTouched = true;
+      state.contact[k] = raw.trim();
+      refreshSubmitState(true);
+      saveDraft();
+    }
+
+    function validateContact(showMsg){
+      const wechat = state.contact.wechat;
+      const qq = state.contact.qq;
+      const mail = state.contact.mail;
+      const hasAny = Boolean(wechat || qq || mail);
+      const wechatOk = !wechat || /^[a-zA-Z][-_a-zA-Z0-9]{5,19}$/.test(wechat);
+      const qqOk = !qq || /^[1-9][0-9]{4,11}$/.test(qq);
+      const mailOk = !mail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
+      const allOk = hasAny && wechatOk && qqOk && mailOk;
+      if (showMsg) {
+        const hint = document.getElementById("contactHint");
+        if (!hasAny) {
+          hint.className = "hint err";
+          hint.textContent = "请至少填写一种联系方式（微信号、QQ号、邮箱）。";
+        } else if (!wechatOk) {
+          hint.className = "hint err";
+          hint.textContent = "微信号格式不正确：需以字母开头，长度 6-20 位。";
+        } else if (!qqOk) {
+          hint.className = "hint err";
+          hint.textContent = "QQ号格式不正确：应为 5-12 位数字。";
+        } else if (!mailOk) {
+          hint.className = "hint err";
+          hint.textContent = "备用邮箱格式不正确，请检查后再提交。";
+        } else {
+          hint.className = "hint";
+          hint.textContent = "联系方式已通过校验，匹配后将向对方展示。";
+        }
+      }
+      return allOk;
+    }
+
+    function refreshSubmitState(showMsg){
+      const sliderReady = touched.size === SLIDER_TOTAL;
+      const contactReady = validateContact(showMsg || contactTouched);
+      document.getElementById("b3").disabled = !(sliderReady && contactReady);
+    }
+
+    let currentSubStep = 1;
+    const TOTAL_SUB_STEPS = 4;
+
+    function setSubStep(n) {
+      currentSubStep = Math.max(1, Math.min(TOTAL_SUB_STEPS, n));
+      document.querySelectorAll("#s3 .sub-group").forEach(function(g) {
+        g.classList.toggle("active", Number(g.dataset.sub) === currentSubStep);
+      });
+      var counter = document.getElementById("subCounter");
+      if (counter) counter.textContent = "\u7B2C " + currentSubStep + " \u7EC4 / \u5171 " + TOTAL_SUB_STEPS + " \u7EC4";
+      window.scrollTo({top: document.getElementById("s3").offsetTop - 20, behavior: "smooth"});
+    }
+
+    function subStep(delta) {
+      setSubStep(currentSubStep + delta);
+    }
+
+    function toStep(n){
+      step=n;
+      document.querySelectorAll(".qstep").forEach((s) => s.classList.remove("active"));
+      const active = document.getElementById(`s${n}`);
+      if (active) active.classList.add("active");
+      document.getElementById("stepText").textContent=`${n} / 3`;
+      document.getElementById("bar").style.width=`${n/3*100}%`;
+      if (n === 3) setSubStep(1);
+      window.scrollTo({top:0,behavior:"smooth"});
+      const title = active?.querySelector("h2");
+      if (title) {
+        title.setAttribute("tabindex", "-1");
+        setTimeout(() => title.focus({ preventScroll: true }), 120);
+      }
+      saveDraft();
+    }
+
+    function escapeHtml(input) {
+      return String(input || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function parseMarkdownBold(text) {
+      const escaped = escapeHtml(text);
+      return escaped.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    }
+
+    function readClosedAnnouncementIds() {
+      try {
+        const raw = sessionStorage.getItem(CLOSED_ANNOUNCEMENTS_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map((item) => Number(item)).filter((item) => Number.isInteger(item) && item > 0);
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function writeClosedAnnouncementIds(ids) {
+      try {
+        sessionStorage.setItem(CLOSED_ANNOUNCEMENTS_KEY, JSON.stringify(ids));
+      } catch (_) {}
+    }
+
+    function closeAnnouncement(id) {
+      const numericId = Number(id || 0);
+      if (!Number.isInteger(numericId) || numericId <= 0) return;
+      const closed = readClosedAnnouncementIds();
+      if (!closed.includes(numericId)) {
+        closed.push(numericId);
+        writeClosedAnnouncementIds(closed);
+      }
+      renderAnnouncements();
+    }
+
+    function renderAnnouncements() {
+      const bar = document.getElementById("announcementBar");
+      const copy = document.getElementById("announcementCopy");
+      const closeBtn = document.getElementById("announcementCloseBtn");
+      if (!bar || !copy || !closeBtn) return;
+      const closed = new Set(readClosedAnnouncementIds());
+      const current = (state.announcements || []).find((item) => !closed.has(Number(item.id || 0)));
+      if (!current) {
+        // API 无公告时，保留 HTML 中的静态公告，不覆盖
+        return;
+      }
+      const title = parseMarkdownBold(String(current.title || "公告"));
+      const content = parseMarkdownBold(String(current.content || ""));
+      copy.innerHTML = `<b>${title}</b>：${content}`;
+      bar.style.display = "block";
+      closeBtn.onclick = () => closeAnnouncement(current.id);
+    }
+
+    async function loadAnnouncements() {
+      try {
+        const data = await api("/api/announcements/active");
+        state.announcements = Array.isArray(data.items) ? data.items : [];
+        renderAnnouncements();
+      } catch (_) {
+        state.announcements = [];
+        renderAnnouncements();
+      }
+    }
+
+    function renderMatchSkeleton() {
+      return `
+        <div class="match-skeleton" aria-label="匹配结果加载中">
+          <div class="skeleton" style="width:52%"></div>
+          <div class="skeleton" style="width:100%"></div>
+          <div class="skeleton" style="width:92%"></div>
+          <div class="skeleton" style="width:74%"></div>
+        </div>
+      `;
+    }
+
+    async function copyText(value, label = "内容") {
+      const text = String(value || "").trim();
+      if (!text || text === "-") {
+        showToast(`暂无可复制的${label}`, "info");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(`${label}已复制`, "success");
+      } catch (_) {
+        showToast("复制失败，请手动复制。", "error");
+      }
+    }
+
+    function renderScoreRing(score) {
+      const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
+      const ratio = safeScore / 100;
+      return `
+        <div class="score-ring" data-score-ring style="--ratio:${ratio.toFixed(4)};">
+          <svg class="score-ring-svg" viewBox="0 0 88 88" aria-hidden="true">
+            <circle class="score-ring-track" cx="44" cy="44" r="37"></circle>
+            <circle class="score-ring-progress" cx="44" cy="44" r="37"></circle>
+          </svg>
+          <i>${safeScore.toFixed(0)}分</i>
+        </div>
+      `;
+    }
+
+    function buildIcebreakerSuggestions(match) {
+      const partnerCampus = String(match?.partner?.campus || "").trim();
+      const selfCampus = String(state.campus || "").trim();
+      const reasonsText = Array.isArray(match?.reasons) ? match.reasons.join(" ") : "";
+      const suggestions = [];
+
+      if (selfCampus && partnerCampus && selfCampus === partnerCampus) {
+        suggestions.push(`☕ 你们都在${partnerCampus} → 约校门口的咖啡馆坐坐？`);
+      } else if (selfCampus && partnerCampus) {
+        suggestions.push(`🔥 跨校区匹配 → 第一顿火锅选在哪？让 TA 定！`);
+      }
+
+      if (/[学术学习科研图书馆专业]/.test(reasonsText)) {
+        suggestions.push("📚 都是学术型 -> 图书馆自习默契测试: 你选几楼？");
+      }
+      if (/[音乐乐器演出民谣]/.test(reasonsText)) {
+        suggestions.push("🎵 都喜欢音乐 -> 小酒馆下周有演出，要不要一起？");
+      }
+      if (suggestions.length < 2) {
+        suggestions.push("🚲 先约一次轻松散步 → 校园里走走，慢慢认识彼此。");
+      }
+      return suggestions.slice(0, 3);
+    }
+
+    function buildMatchCard(match) {
+      const score = Math.max(0, Math.min(100, Number(match.score) || 0));
+      const reasons = (match.reasons || []).filter(Boolean);
+      const partner = match.partner || {};
+      const contact = match.contact || {};
+      const locked = !match.contactUnlocked; // 对方未同意时锁定联系方式
+      const isCrush = match.isCrushMatch;
+      const greetings = match.greetings || {};
+
+      // Avatar: first character of partner name
+      const avatarChar = (partner.name || "?").charAt(0).toUpperCase();
+
+      // Match kind badge
+      const kindBadge = isCrush
+        ? `<span class="match-kind-badge">💘 双向心动</span>`
+        : `<span class="match-kind-badge">🤖 算法匹配</span>`;
+
+      // Reasons
+      const reasonHtml = reasons.length
+        ? reasons.map((r) => `<span class="reason-chip">${escapeHtml(r)}</span>`).join("")
+        : `<span class="reason-chip">系统正在补充你们的共同点，先从校园生活聊起也很自然。</span>`;
+
+      // Icebreaker suggestions
+      const icebreakerHtml = buildIcebreakerSuggestions(match)
+        .map((item) => `<span class="reason-chip">${escapeHtml(item)}</span>`)
+        .join("");
+
+      // Contact rows
+      const contactRows = [
+        { label: "微信", value: contact.wechat || "-" },
+        { label: "QQ", value: contact.qq || "-" },
+        { label: "邮箱", value: contact.backupEmail || "-" }
+      ];
+
+      // Greeting section
+      const greetSection = `
+        <div class="greet-box">
+          <h5>💬 破冰留言</h5>
+          ${greetings.theirMessage
+            ? `<div class="greet-their-msg">TA 说：「${escapeHtml(greetings.theirMessage)}」</div>`
+            : `<div style="font-size:12px;color:#aaa;margin-bottom:8px;">对方还没有留言，先发送你的第一句话吧</div>`}
+          ${greetings.myMessage
+            ? `<div class="greet-my-msg">你说：「${escapeHtml(greetings.myMessage)}」<button class="ghost" style="font-size:11px;margin-left:8px;" onclick="editGreeting()">修改</button></div>`
+            : `<div id="greetInputArea">
+                <textarea id="greetTextarea" class="greet-textarea" placeholder="写一句破冰开场白，最多 300 字..." maxlength="300" oninput="updateGreetCount()"></textarea>
+                <div class="greet-foot">
+                  <span class="greet-count" id="greetCount">0 / 300</span>
+                  <button class="greet-submit-btn" type="button" onclick="submitGreeting()">发送留言</button>
+                </div>
+              </div>`}
+        </div>`;
+
+      return `
+        <article class="match-card-v2">
+          <div class="match-card-header ${isCrush ? "crush-kind" : ""}">
+            <div class="match-avatar">${escapeHtml(avatarChar)}</div>
+            <div class="match-header-info">
+              <div class="match-header-name">${escapeHtml(partner.name || "未知")}</div>
+              <div class="match-header-sub">${escapeHtml(partner.grade || "")} · ${escapeHtml(partner.campus || "")} · ${escapeHtml(partner.gender || "")}</div>
+            </div>
+            <div style="text-align:center;flex-shrink:0;">
+              <div class="match-score-badge">${score}<span style="font-size:13px;font-weight:400;">分</span></div>
+              <div class="match-score-sub">综合契合度</div>
+              ${kindBadge}
+            </div>
+          </div>
+          <div class="match-card-body">
+            <div class="match-meta-grid">
+              <div class="match-meta-item"><b>周次</b>：${escapeHtml(match.weekKey || "-")}</div>
+              ${match.confidence ? `<div class="match-meta-item"><b>置信度</b>：${match.confidence}%</div>` : ""}
+            </div>
+            ${match.confidence ? `<div class="confidence-bar" style="margin-bottom:10px;">
+              <span class="confidence-label">置信度</span>
+              <div class="confidence-track"><div class="confidence-fill" style="width:${match.confidence}%"></div></div>
+              <span class="confidence-value">${match.confidence}%</span>
+            </div>` : ""}
+            <div class="match-section-title">匹配理由</div>
+            <div class="reason-tags">${reasonHtml}</div>
+            <div class="match-section-title">破冰建议</div>
+            <div class="reason-tags">${icebreakerHtml}</div>
+            ${greetSection}
+            <div class="contact-panel ${locked ? "locked" : ""}" style="margin-top:14px;">
+              ${contactRows.map((row) => `
+                <div class="contact-row">
+                  <span><b>${row.label}</b>：${escapeHtml(row.value)}</span>
+                  <button class="copy-btn" type="button" aria-label="复制${row.label}" data-copy="${escapeHtml(row.value)}" data-label="${row.label}">复制</button>
+                </div>
+              `).join("")}
+              <div class="contact-mask" style="display:none;">
+                <span>对方尚未同意公开联系方式</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function updateGreetCount() {
+      const ta = document.getElementById("greetTextarea");
+      const cnt = document.getElementById("greetCount");
+      if (ta && cnt) cnt.textContent = `${ta.value.length} / 300`;
+    }
+
+    function editGreeting() {
+      const greetBox = document.querySelector(".greet-box");
+      if (!greetBox) return;
+      const myMsgEl = greetBox.querySelector(".greet-my-msg");
+      if (myMsgEl) myMsgEl.remove();
+      const inputArea = document.getElementById("greetInputArea");
+      if (!inputArea) {
+        const area = document.createElement("div");
+        area.id = "greetInputArea";
+        area.innerHTML = `<textarea id="greetTextarea" class="greet-textarea" placeholder="修改你的留言..." maxlength="300" oninput="updateGreetCount()"></textarea>
+          <div class="greet-foot"><span class="greet-count" id="greetCount">0 / 300</span><button class="greet-submit-btn" type="button" onclick="submitGreeting()">更新留言</button></div>`;
+        greetBox.appendChild(area);
+      }
+    }
+
+    async function submitGreeting() {
+      const ta = document.getElementById("greetTextarea");
+      if (!ta) return;
+      const msg = ta.value.trim();
+      if (!msg) { showToast("留言不能为空", "error"); return; }
+      try {
+        await api("/api/match/greet", { method: "POST", body: JSON.stringify({ message: msg }) });
+        showToast("留言已发送！", "success");
+        refreshMatch();
+      } catch (e) {
+        showToast("发送失败：" + e.message, "error");
+      }
+    }
+
+    async function togglePause(paused) {
+      try {
+        await api("/api/user/pause", { method: "POST", body: JSON.stringify({ paused }) });
+        showToast(paused ? "已暂停参与本周匹配" : "已恢复参与匹配", paused ? "info" : "success");
+      } catch (e) {
+        showToast("操作失败：" + e.message, "error");
+        document.getElementById("pauseToggle").checked = !paused;
+      }
+    }
+
+    async function loadPauseStatus() {
+      try {
+        const d = await api("/api/user/me");
+        const toggle = document.getElementById("pauseToggle");
+        if (toggle) toggle.checked = Boolean(d.paused);
+      } catch {}
+    }
+
+    function animateScoreRings(root = document) {
+      const rings = root.querySelectorAll("[data-score-ring]");
+      if (!rings.length) return;
+      requestAnimationFrame(() => {
+        rings.forEach((ring) => ring.classList.add("show"));
+      });
+    }
+
+    function getConsentNodes() {
+      const wrap = document.getElementById("consentWrap");
+      const title = document.getElementById("consentTitle");
+      const note = document.getElementById("consentNote");
+      const slider = document.getElementById("consentSlider");
+      const fill = document.getElementById("consentFill");
+      const text = document.getElementById("consentText");
+      const thumb = document.getElementById("consentThumb");
+      return { wrap, title, note, slider, fill, text, thumb };
+    }
+
+    function setConsentDisabled(disabled) {
+      const { slider, thumb } = getConsentNodes();
+      if (!slider || !thumb) return;
+      slider.setAttribute("aria-disabled", disabled ? "true" : "false");
+      thumb.disabled = Boolean(disabled);
+    }
+
+    function setConsentSliderLeft(left, animate = false) {
+      const { slider, fill, thumb } = getConsentNodes();
+      if (!slider || !fill || !thumb) return 0;
+      const max = Math.max(0, slider.clientWidth - thumb.offsetWidth - 4);
+      const safe = Math.max(0, Math.min(max, Number(left) || 0));
+      thumb.style.transition = animate ? "transform .2s ease" : "none";
+      fill.style.transition = animate ? "width .2s ease" : "none";
+      thumb.style.transform = `translateX(${safe}px)`;
+      fill.style.width = `${safe + thumb.offsetWidth}px`;
+      slider.classList.toggle("done", safe >= max * 0.98 && max > 0);
+      consentDragState.left = safe;
+      consentDragState.max = max;
+      return safe;
+    }
+
+    function resetConsentSlider(animate = true) {
+      setConsentSliderLeft(0, animate);
+    }
+
+    function completeConsentSlider(animate = true) {
+      setConsentSliderLeft(Number.MAX_SAFE_INTEGER, animate);
+    }
+
+    function updateConsentUI(match) {
+      const { wrap, title, note } = getConsentNodes();
+      if (!wrap) return;
+      if (!match) { wrap.style.display = "none"; return; }
+      wrap.style.display = "";
+      const self = match.selfConsent;
+      const partner = match.partnerConsent;
+      if (self) {
+        // 我已同意：滑块锁定到右侧
+        completeConsentSlider(false);
+        setConsentDisabled(true);
+        if (title) title.textContent = "✅ 你已公开联系方式给对方";
+        if (note) note.textContent = partner
+          ? "双方都已同意，你们可以互相查看联系方式了。"
+          : "对方还未同意公开联系方式，你暂时看不到对方的联系方式。";
+      } else {
+        // 我未同意：显示滑块
+        resetConsentSlider(false);
+        setConsentDisabled(false);
+        if (title) title.textContent = "公开我的联系方式给对方";
+        if (note) note.textContent = "你同意后，对方可以看到你的联系方式。对方同意后，你才能看到对方的联系方式。";
+      }
+    }
+
+    function setFeedbackStatus(message, level = "") {
+      const el = document.getElementById("feedbackStatus");
+      if (!el) return;
+      el.className = "feedback-status";
+      if (level === "ok") el.classList.add("ok");
+      if (level === "err") el.classList.add("err");
+      el.textContent = String(message || "");
+    }
+
+    function updateFeedbackStarsUI() {
+      const stars = document.querySelectorAll("#feedbackStars .star-btn");
+      stars.forEach((btn) => {
+        const n = Number(btn.dataset.rating || 0);
+        btn.classList.toggle("active", n <= Number(state.feedback.rating || 0));
+        btn.setAttribute("aria-pressed", n === Number(state.feedback.rating || 0) ? "true" : "false");
+      });
+    }
+
+    function resetFeedbackForm() {
+      state.feedback = {
+        rating: 0,
+        contacted: false,
+        comment: ""
+      };
+      const checkbox = document.getElementById("feedbackContacted");
+      const comment = document.getElementById("feedbackComment");
+      const submitBtn = document.getElementById("feedbackSubmitBtn");
+      if (checkbox) checkbox.checked = false;
+      if (comment) comment.value = "";
+      if (submitBtn) submitBtn.disabled = false;
+      updateFeedbackStarsUI();
+      setFeedbackStatus("请选择 1-5 星后提交反馈。");
+    }
+
+    function updateFeedbackUI(match) {
+      const wrap = document.getElementById("feedbackWrap");
+      const submitBtn = document.getElementById("feedbackSubmitBtn");
+      if (!wrap || !submitBtn) return;
+      if (!match) {
+        wrap.style.display = "none";
+        return;
+      }
+      if (match.feedbackSubmitted) {
+        wrap.style.display = "none";
+        return;
+      }
+      if (!match.feedbackEligible) {
+        wrap.style.display = "none";
+        return;
+      }
+      wrap.style.display = "grid";
+      resetFeedbackForm();
+    }
+
+    async function submitFeedback() {
+      const match = state.currentMatch;
+      if (!match || !match.id) {
+        setFeedbackStatus("请先刷新匹配结果。", "err");
+        return;
+      }
+      const rating = Number(state.feedback.rating || 0);
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        setFeedbackStatus("请先选择 1-5 星评分。", "err");
+        return;
+      }
+      const comment = String(state.feedback.comment || "").trim();
+      if (comment.length > 500) {
+        setFeedbackStatus("反馈文字最多 500 字。", "err");
+        return;
+      }
+      const submitBtn = document.getElementById("feedbackSubmitBtn");
+      const oldText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "提交中...";
+      try {
+        await api("/api/match/feedback", {
+          method: "POST",
+          body: JSON.stringify({
+            matchId: match.id,
+            rating,
+            contacted: Boolean(state.feedback.contacted),
+            comment
+          })
+        });
+        setFeedbackStatus("反馈提交成功，感谢你的支持。", "ok");
+        showToast("反馈提交成功", "success");
+        await refreshMatch();
+      } catch (err) {
+        setFeedbackStatus(`提交失败：${err.message}`, "err");
+        showToast(`反馈提交失败：${err.message}`, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = oldText;
+      }
+    }
+
+    async function submitQuiz(){
+      const submitBtn = document.getElementById("b3");
+      const oldText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "提交中...";
+      try {
+        const payload = {
+          profile: {
+            gender: state.gender,
+            seeking: state.seeking,
+            grade: state.grade,
+            campus: state.campus,
+            seekingGrades: state.seekingGrades,
+            wechat: state.contact.wechat,
+            qq: state.contact.qq,
+            backupEmail: state.contact.mail
+          },
+          questionnaire: {
+            values: state.values,
+            sliders: state.sliders
+          }
+        };
+        await api("/api/submit-all", { method: "POST", body: JSON.stringify(payload) });
+
+        const contacts = [];
+        if (state.contact.wechat) contacts.push(`微信：${state.contact.wechat}`);
+        if (state.contact.qq) contacts.push(`QQ：${state.contact.qq}`);
+        if (state.contact.mail) contacts.push(`邮箱：${state.contact.mail}`);
+        const lines=[
+          `认证状态：已通过高校身份认证（${state.auth.mail}）`,
+          `身份：${state.gender} · ${state.grade} · ${state.campus} · 希望认识${state.seeking}`,
+          `标签画像：${state.values.join("、")}`,
+          `量表问卷：${touched.size} / ${SLIDER_TOTAL} 已完成`,
+          `辣度偏好指数：${state.sliders.spicy_level} / 7`,
+          `联系方式：${contacts.join("；")}`
+        ];
+        document.getElementById("summary").innerHTML=lines.map(x=>`<div>${escapeHtml(x)}</div>`).join("");
+        clearDraft();
+        switchPage("done");
+        showToast("问卷已提交，坐等周四揭晓 🎯", "success");
+        await refreshMatch();
+        loadCrushStatus();
+      } catch (err) {
+        showToast(`提交失败：${err.message}`, "error");
+      } finally {
+        submitBtn.textContent = oldText;
+        refreshSubmitState(true);
+      }
+    }
+
+    async function refreshMatch() {
+      const status = document.getElementById("matchStatus");
+      status.innerHTML = renderMatchSkeleton();
+      updateConsentUI(null);
+      updateFeedbackUI(null);
+      try {
+        const data = await api("/api/match/current");
+        if (!data.match) {
+          state.currentMatch = null;
+          status.innerHTML = "这周暂时没有匹配到合适的人，但明远湖的落日每天都不一样，好的人值得多等一周。";
+          updateConsentUI(null);
+          updateFeedbackUI(null);
+          return;
+        }
+        state.currentMatch = data.match;
+        status.innerHTML = buildMatchCard(data.match);
+        animateScoreRings(status);
+        status.querySelectorAll("[data-copy]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            copyText(btn.dataset.copy, btn.dataset.label || "联系方式");
+          });
+        });
+        updateConsentUI(data.match);
+        updateFeedbackUI(data.match);
+        updateNarrativeUI(data.match);
+        showToast("你的本周匹配已揭晓 ✨", "success");
+      } catch (err) {
+        status.innerHTML = `<span class="status-err">获取匹配结果失败：${escapeHtml(err.message)}</span>`;
+        showToast(`获取匹配结果失败：${err.message}`, "error");
+        updateConsentUI(state.currentMatch);
+        updateFeedbackUI(state.currentMatch);
+      }
+    }
+
+    function initConsentSlider() {
+      const { slider, thumb } = getConsentNodes();
+      if (!slider || !thumb) return;
+      const onMove = (event) => {
+        if (!consentDragState.active) return;
+        const dx = event.clientX - consentDragState.startX;
+        setConsentSliderLeft(consentDragState.startLeft + dx, false);
+      };
+      const onEnd = async () => {
+        if (!consentDragState.active) return;
+        consentDragState.active = false;
+        if (consentDragState.left >= consentDragState.max * 0.94) {
+          completeConsentSlider(true);
+          await shareMyContact();
+          return;
+        }
+        resetConsentSlider(true);
+      };
+      thumb.addEventListener("pointerdown", (event) => {
+        const disabled = slider.getAttribute("aria-disabled") === "true";
+        if (disabled || consentSubmitting) return;
+        consentDragState.active = true;
+        consentDragState.pointerId = event.pointerId;
+        consentDragState.startX = event.clientX;
+        consentDragState.startLeft = consentDragState.left;
+        thumb.setPointerCapture(event.pointerId);
+      });
+      thumb.addEventListener("pointermove", onMove);
+      thumb.addEventListener("pointerup", onEnd);
+      thumb.addEventListener("pointercancel", onEnd);
+      window.addEventListener("resize", () => {
+        setConsentSliderLeft(consentDragState.left, false);
+      });
+      resetConsentSlider(false);
+      setConsentDisabled(true);
+    }
+
+    function initFeedbackCard() {
+      const stars = document.querySelectorAll("#feedbackStars .star-btn");
+      const checkbox = document.getElementById("feedbackContacted");
+      const comment = document.getElementById("feedbackComment");
+      const submitBtn = document.getElementById("feedbackSubmitBtn");
+      stars.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.feedback.rating = Number(btn.dataset.rating || 0);
+          updateFeedbackStarsUI();
+          setFeedbackStatus("评分已选择，可提交反馈。");
+        });
+      });
+      if (checkbox) {
+        checkbox.addEventListener("change", () => {
+          state.feedback.contacted = checkbox.checked;
+        });
+      }
+      if (comment) {
+        comment.addEventListener("input", () => {
+          state.feedback.comment = String(comment.value || "");
+          if (state.feedback.comment.length > 500) {
+            setFeedbackStatus("反馈文字最多 500 字。", "err");
+          }
+        });
+      }
+      if (submitBtn) {
+        submitBtn.addEventListener("click", () => {
+          submitFeedback();
+        });
+      }
+      resetFeedbackForm();
+    }
+
+    function notifyActionError(prefix, err) {
+      const msg = err instanceof Error ? err.message : String(err || "");
+      showToast(`${prefix}：${msg}`, "error");
+    }
+
+    async function shareMyContact() {
+      if (consentSubmitting) return;
+      if (!state.currentMatch) {
+        showToast("请先刷新匹配结果。", "info");
+        resetConsentSlider(true);
+        return;
+      }
+      if (state.currentMatch.selfConsent) {
+        showToast("你已经同意公开联系方式。", "info");
+        completeConsentSlider(true);
+        return;
+      }
+      consentSubmitting = true;
+      setConsentDisabled(true);
+      try {
+        // 第一步：申请操作令牌
+        const tokenRes = await api("/api/confirm-token", {
+          method: "POST",
+          body: JSON.stringify({ action: "match_consent" })
+        });
+        const confirmToken = tokenRes && tokenRes.token ? tokenRes.token : "";
+        if (!confirmToken) throw new Error("获取确认令牌失败，请重试");
+        // 第二步：带令牌提交同意
+        await api("/api/match/consent", {
+          method: "POST",
+          body: JSON.stringify({ shareContact: true, confirmToken })
+        });
+        showToast("已公开你的联系方式给对方。", "success");
+        await refreshMatch();
+      } catch (err) {
+        notifyActionError("提交同意失败", err);
+        resetConsentSlider(true);
+      } finally {
+        consentSubmitting = false;
+        if (!state.currentMatch?.selfConsent) {
+          setConsentDisabled(false);
+        }
+      }
+    }
+
+    function resetQuiz(resetAuth = false, keepDraft = false){
+      step=1; contactTouched=false;
+      if (resetAuth) state.auth = { verified:false, sid:"", name:"", mail:"" };
+      state.gender=state.seeking=state.grade=state.campus=null;
+      state.values=[];
+      state.sliders={ ...DEFAULT_SLIDERS };
+      state.contact={ wechat:"", qq:"", mail:"" };
+      touched.clear();
+      document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel")); document.querySelectorAll(".value").forEach(x=>x.classList.remove("sel","off"));
+      document.querySelectorAll(".qstep").forEach(x=>x.classList.remove("active")); document.getElementById("s1").classList.add("active");
+      document.querySelectorAll('input[type="range"]').forEach(r=>{ r.value=4; });
+      Object.keys(DEFAULT_SLIDERS).forEach((k) => updateScoreUI(k, 0));
+      document.getElementById("wechatInput").value=""; document.getElementById("qqInput").value=""; document.getElementById("mailInput").value="";
+      document.getElementById("contactHint").className="hint"; document.getElementById("contactHint").textContent="联系方式仅向你的匹配对象展示。";
+      document.getElementById("count").textContent=`已选择 0 / 至少${VALUE_MIN}（最多${VALUE_MAX}）`; document.getElementById("stepText").textContent="1 / 3"; document.getElementById("bar").style.width="33.3%";
+      document.getElementById("b2").disabled=true; document.getElementById("b3").disabled=true;
+      applySelectionState();
+      if (!keepDraft) clearDraft();
+      setAuthUI();
+    }
+
+    function copyLink(){ copyText(location.href, "链接"); }
+
+    // ── Crush / Shoot Your Shot ─────────────────────────────────
+    // ── AI Narrative ─────────────────────────────────────────────
+    function updateNarrativeUI(match) {
+      const wrap = document.getElementById("narrativeWrap");
+      const content = document.getElementById("narrativeContent");
+      const btn = document.getElementById("narrativeBtn");
+      if (!match) { wrap.style.display = "none"; return; }
+      wrap.style.display = "block";
+      if (match.narrative) {
+        content.textContent = match.narrative;
+        content.className = "narrative-content";
+        btn.style.display = "none";
+      } else {
+        content.textContent = "";
+        btn.style.display = "inline-block";
+        btn.disabled = false;
+        btn.textContent = "生成 AI 分析";
+      }
+    }
+
+    async function generateNarrative() {
+      const btn = document.getElementById("narrativeBtn");
+      const content = document.getElementById("narrativeContent");
+      btn.disabled = true;
+      btn.textContent = "生成中...";
+      content.textContent = "AI 正在分析你们的匹配数据，请稍候...";
+      content.className = "narrative-content loading";
+      try {
+        const d = await api("/api/match/narrative", {
+          method: "POST",
+          body: JSON.stringify({})
+        });
+        content.textContent = d.narrative || "暂无分析结果";
+        content.className = "narrative-content";
+        btn.style.display = "none";
+        if (state.currentMatch) state.currentMatch.narrative = d.narrative;
+      } catch (e) {
+        content.textContent = "生成失败：" + (e.message || "请稍后重试");
+        content.className = "narrative-content";
+        btn.disabled = false;
+        btn.textContent = "重试";
+      }
+    }
+
+    async function loadCrushStatus() {
+      try {
+        const d = await api("/api/crush");
+        const statusEl = document.getElementById("crushStatus");
+        const deleteBtn = document.getElementById("crushDeleteBtn");
+        const input = document.getElementById("crushInput");
+        if (d.crush) {
+          statusEl.className = "crush-status success";
+          statusEl.textContent = d.crush.matched
+            ? "恭喜！双向心动成功，你们已被直接配对！"
+            : "已提交心动：" + d.crush.targetName + "（等待TA也选择你...）";
+          input.value = d.crush.targetStudentId;
+          input.disabled = true;
+          deleteBtn.style.display = "inline-block";
+        } else {
+          statusEl.textContent = "";
+          statusEl.className = "crush-status";
+          input.value = "";
+          input.disabled = false;
+          deleteBtn.style.display = "none";
+        }
+      } catch {}
+    }
+
+    async function submitCrush() {
+      const input = document.getElementById("crushInput");
+      const statusEl = document.getElementById("crushStatus");
+      const val = (input.value || "").trim();
+      if (!val) {
+        statusEl.className = "crush-status error";
+        statusEl.textContent = "请输入心仪对象的学号";
+        return;
+      }
+      try {
+        const d = await api("/api/crush", {
+          method: "POST",
+          body: JSON.stringify({ targetStudentId: val })
+        });
+        statusEl.className = "crush-status success";
+        statusEl.textContent = "已提交心动：" + d.crush.targetName + "（等待TA也选择你...）";
+        input.disabled = true;
+        document.getElementById("crushDeleteBtn").style.display = "inline-block";
+      } catch (e) {
+        statusEl.className = "crush-status error";
+        statusEl.textContent = e.message || "提交失败，请重试";
+      }
+    }
+
+    async function deleteCrush() {
+      try {
+        await api("/api/crush/delete", {
+          method: "POST",
+          body: JSON.stringify({})
+        });
+        const input = document.getElementById("crushInput");
+        input.value = "";
+        input.disabled = false;
+        document.getElementById("crushStatus").textContent = "";
+        document.getElementById("crushStatus").className = "crush-status";
+        document.getElementById("crushDeleteBtn").style.display = "none";
+      } catch {}
+    }
+    function countUp(el,target,ms=1800){ if(!el) return; let n=0; const k=target/(ms/16); const t=setInterval(()=>{ n+=k; if(n>=target){ n=target; clearInterval(t); } el.textContent=Math.floor(n).toLocaleString(); },16); }
+
+    function applyA11y() {
+      document.querySelectorAll(".opt,.value").forEach((btn) => {
+        if (!btn.hasAttribute("aria-label")) {
+          btn.setAttribute("aria-label", btn.textContent.trim());
+        }
+        if (!btn.hasAttribute("aria-pressed")) {
+          btn.setAttribute("aria-pressed", "false");
+        }
+      });
+      document.querySelectorAll("button,input,select,textarea,a[href]").forEach((el) => {
+        if (el.hasAttribute("aria-label")) return;
+        let label = "";
+        if (el.tagName === "BUTTON") {
+          label = el.textContent.trim();
+        }
+        if (!label && el.id) {
+          const lb = document.querySelector(`label[for="${el.id}"]`);
+          if (lb) label = lb.textContent.trim();
+        }
+        if (!label && el.placeholder) label = el.placeholder;
+        if (!label && el.name) label = el.name;
+        if (label) el.setAttribute("aria-label", label);
+      });
+    }
+
+    if ("IntersectionObserver" in window) {
+      const io=new IntersectionObserver((es)=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("show"); io.unobserve(e.target); }}),{threshold:.14});
+      document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+    } else {
+      document.querySelectorAll(".reveal").forEach(el=>el.classList.add("show"));
+    }
+    initScorePickers();
+    initConsentSlider();
+    initFeedbackCard();
+    applyA11y();
+    updateNetworkBanner();
+    window.addEventListener("online", () => {
+      updateNetworkBanner();
+      showToast("网络已恢复", "success");
+    });
+    window.addEventListener("offline", () => {
+      updateNetworkBanner();
+      showToast("网络连接已断开，请检查网络", "error");
+    });
+    // Fetch real user count from server
+    fetch("/api/stats/overview").then(r=>r.json()).then(d=>{
+      const n = d.totalUsers || 0;
+      setTimeout(()=>countUp(document.getElementById("live"),n),500);
+      setTimeout(()=>countUp(document.getElementById("legacyLive"),n),500);
+    }).catch(()=>{
+      // Fallback: show 0 instead of fake number
+      const el1 = document.getElementById("live");
+      const el2 = document.getElementById("legacyLive");
+      if(el1) el1.textContent="--";
+      if(el2) el2.textContent="--";
+    });
+    initUniversitySelector();
+    loadConfigAndUser();
+  </script>
+</body>
+</html>

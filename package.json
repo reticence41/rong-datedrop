@@ -1,0 +1,26 @@
+{
+  "name": "scu-datedrop-engine",
+  "version": "1.0.0",
+  "description": "Sichuan University dating platform with real weekly matching engine",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "match:run": "node run-match.js",
+    "mail:process": "node process-mail-queue.js",
+    "mail:worker": "node process-mail-queue.js --loop",
+    "ops:setup-tasks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-windows-tasks.ps1",
+    "ops:remove-tasks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/remove-windows-tasks.ps1",
+    "test": "node --test",
+    "seed": "node scripts/seed-dev.js",
+    "show": "node scripts/show-matches.js",
+    "reset": "node scripts/reset-db.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
+    "dotenv": "^17.4.0",
+    "nodemailer": "^8.0.4",
+    "openai": "^6.33.0"
+  }
+}

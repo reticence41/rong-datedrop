@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log*
+logs
+data
+*.db
+*.db-*
+.env
+.git
+.gitignore
+cloudflared.exe
