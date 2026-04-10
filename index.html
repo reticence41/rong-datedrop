@@ -362,6 +362,7 @@
     }
     .mail-wrap { position:relative; }
     .mail-wrap .signup-input { padding-right:108px; }
+    .uni-detected { margin-top:6px; font-size:13px; color:#b0a890; line-height:1.5; }
     .mail-suffix {
       position:absolute;
       right:13px;
@@ -1305,53 +1306,48 @@
           <p id="homeModeTip">先完成认证，再填写问卷参与本周匹配</p>
           <div class="form-grid">
             <div>
-              <label class="form-label" for="homeName">昵称</label>
-              <input id="homeName" class="signup-input" placeholder="给自己取个昵称" />
-            </div>
-            <div>
-              <label class="form-label" for="homeUniversity">学校</label>
-              <select id="homeUniversity" class="signup-select" onchange="onUniversityChange()">
-                <option value="">选择学校</option>
-              </select>
-            </div>
-            <div class="signup-row2">
-              <div>
-                <label class="form-label" for="homeCampus">校区</label>
-                <select id="homeCampus" class="signup-select">
-                  <option value="">先选择学校</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label" for="homeGrade">年级</label>
-                <select id="homeGrade" class="signup-select">
-                  <option value="">选择年级</option>
-                  <option value="大一">大一</option>
-                  <option value="大二">大二</option>
-                  <option value="大三">大三</option>
-                  <option value="大四及以上">大四及以上</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label class="form-label" for="homeMajor">专业</label>
-              <input id="homeMajor" class="signup-input" placeholder="你的专业（选填）" />
-            </div>
-            <div>
-              <label class="form-label" for="homeStudentId">学号</label>
-              <input id="homeStudentId" class="signup-input" placeholder="请输入学号" />
-            </div>
-            <div>
               <label class="form-label" for="homeEmail">学校邮箱</label>
-              <div class="mail-wrap">
-                <input id="homeEmail" class="signup-input" placeholder="请输入学校邮箱" />
-                <span id="homeMailSuffix" class="mail-suffix">@请先选择学校</span>
-              </div>
+              <input id="homeEmail" class="signup-input" placeholder="输入完整学校邮箱，如 zhangsan@stu.scu.edu.cn" oninput="onEmailInput()" />
+              <div id="homeUniDetected" class="uni-detected" style="display:none;"></div>
             </div>
             <div id="homeCodeBlock">
               <label class="form-label" for="homeCode">验证码</label>
               <div class="code-row">
                 <input id="homeCode" class="signup-input" placeholder="输入6位验证码" maxlength="6" />
                 <button id="homeSendCodeBtn" class="code-btn" type="button" onclick="sendHomeOtp()">发送验证码</button>
+              </div>
+            </div>
+            <div id="homeProfileFields" style="display:none;">
+              <input type="hidden" id="homeUniversity" value="" />
+              <div>
+                <label class="form-label" for="homeName">昵称</label>
+                <input id="homeName" class="signup-input" placeholder="给自己取个昵称" />
+              </div>
+              <div class="signup-row2">
+                <div>
+                  <label class="form-label" for="homeCampus">校区</label>
+                  <select id="homeCampus" class="signup-select">
+                    <option value="">选择校区</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" for="homeGrade">年级</label>
+                  <select id="homeGrade" class="signup-select">
+                    <option value="">选择年级</option>
+                    <option value="大一">大一</option>
+                    <option value="大二">大二</option>
+                    <option value="大三">大三</option>
+                    <option value="大四及以上">大四及以上</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="form-label" for="homeMajor">专业</label>
+                <input id="homeMajor" class="signup-input" placeholder="你的专业（选填）" />
+              </div>
+              <div>
+                <label class="form-label" for="homeStudentId">学号</label>
+                <input id="homeStudentId" class="signup-input" placeholder="请输入学号" />
               </div>
             </div>
           </div>
@@ -2070,29 +2066,35 @@
     }
 
     function initUniversitySelector() {
-      const sel = homeEl("homeUniversity");
-      if (!sel) return;
-      UNIVERSITIES.forEach(u => {
-        const opt = document.createElement("option");
-        opt.value = u.id;
-        opt.textContent = u.name + "（" + u.short + "）";
-        sel.appendChild(opt);
-      });
+      // No longer needed — university is auto-detected from email
     }
 
-    function onUniversityChange() {
-      const sel = homeEl("homeUniversity");
-      const uniId = sel ? sel.value : "";
-      const uni = UNIVERSITIES.find(u => u.id === uniId) || null;
+    function findUniversityByEmailDomain(email) {
+      if (!email || !email.includes("@")) return null;
+      const domain = email.split("@")[1].toLowerCase();
+      return UNIVERSITIES.find(u => u.domains.some(d => d === domain)) || null;
+    }
+
+    function onEmailInput() {
+      const email = String(homeEl("homeEmail")?.value || "").trim();
+      const detectedEl = homeEl("homeUniDetected");
+      const profileFields = homeEl("homeProfileFields");
+      const uniInput = homeEl("homeUniversity");
+
+      const uni = findUniversityByEmailDomain(email);
       state.selectedUniversity = uni;
 
-      // Update campus dropdown
-      const campusSel = homeEl("homeCampus");
-      if (campusSel) {
-        campusSel.innerHTML = "";
-        if (!uni) {
-          campusSel.innerHTML = '<option value="">先选择学校</option>';
-        } else {
+      if (uni) {
+        if (detectedEl) {
+          detectedEl.style.display = "block";
+          detectedEl.innerHTML = '<span style="color:#7fefbd;">&#10003;</span> 已识别：<b>' + uni.name + '</b>（' + uni.short + '）';
+        }
+        if (uniInput) uniInput.value = uni.id;
+        if (profileFields) profileFields.style.display = "block";
+
+        // Update campus dropdown
+        const campusSel = homeEl("homeCampus");
+        if (campusSel) {
           campusSel.innerHTML = '<option value="">选择校区</option>';
           uni.campuses.forEach(c => {
             const opt = document.createElement("option");
@@ -2105,34 +2107,39 @@
           other.textContent = "其他";
           campusSel.appendChild(other);
         }
-      }
 
-      // Update email suffix
-      const suffixEl = homeEl("homeMailSuffix");
-      if (suffixEl) {
-        suffixEl.textContent = uni ? "@" + uni.defaultDomain : "@请先选择学校";
-      }
-
-      // Update quiz campus buttons
-      const quizOpts = document.getElementById("quizCampusOpts");
-      if (quizOpts && uni) {
-        quizOpts.innerHTML = "";
-        uni.campuses.forEach(c => {
-          const btn = document.createElement("button");
-          btn.className = "opt";
-          btn.setAttribute("data-k", "campus");
-          btn.setAttribute("data-v", c);
-          btn.textContent = c;
-          btn.onclick = function() { pick("campus", c, this); };
-          quizOpts.appendChild(btn);
-        });
-        const otherBtn = document.createElement("button");
-        otherBtn.className = "opt";
-        otherBtn.setAttribute("data-k", "campus");
-        otherBtn.setAttribute("data-v", "其他");
-        otherBtn.textContent = "其他";
-        otherBtn.onclick = function() { pick("campus", "其他", this); };
-        quizOpts.appendChild(otherBtn);
+        // Update quiz campus buttons
+        const quizOpts = document.getElementById("quizCampusOpts");
+        if (quizOpts) {
+          quizOpts.innerHTML = "";
+          uni.campuses.forEach(c => {
+            const btn = document.createElement("button");
+            btn.className = "opt";
+            btn.setAttribute("data-k", "campus");
+            btn.setAttribute("data-v", c);
+            btn.textContent = c;
+            btn.onclick = function() { pick("campus", c, this); };
+            quizOpts.appendChild(btn);
+          });
+          const otherBtn = document.createElement("button");
+          otherBtn.className = "opt";
+          otherBtn.setAttribute("data-k", "campus");
+          otherBtn.setAttribute("data-v", "其他");
+          otherBtn.textContent = "其他";
+          otherBtn.onclick = function() { pick("campus", "其他", this); };
+          quizOpts.appendChild(otherBtn);
+        }
+      } else {
+        if (detectedEl) {
+          if (email.includes("@")) {
+            detectedEl.style.display = "block";
+            detectedEl.innerHTML = '<span style="color:#ef7f7f;">&#10007;</span> 未识别该邮箱域名，请使用支持的学校邮箱';
+          } else {
+            detectedEl.style.display = "none";
+          }
+        }
+        if (uniInput) uniInput.value = "";
+        if (profileFields) profileFields.style.display = "none";
       }
     }
 
@@ -2140,7 +2147,7 @@
       return {
         studentId: String(homeEl("homeStudentId")?.value || "").trim(),
         name: String(homeEl("homeName")?.value || "").trim(),
-        email: (() => { const v = String(homeEl("homeEmail")?.value || "").trim(); const suffix = state.selectedUniversity ? state.selectedUniversity.defaultDomain : ""; return v && !v.includes("@") && suffix ? v + "@" + suffix : v; })(),
+        email: String(homeEl("homeEmail")?.value || "").trim(),
         campus: String(homeEl("homeCampus")?.value || "").trim(),
         grade: String(homeEl("homeGrade")?.value || "").trim(),
         major: String(homeEl("homeMajor")?.value || "").trim(),

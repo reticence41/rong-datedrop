@@ -73,7 +73,7 @@ function buildConfig() {
       },
       resend: {
         apiKey: String(process.env.RESEND_API_KEY || "").trim(),
-        from: String(process.env.RESEND_FROM || "noreply@rong.cn").trim()
+        from: String(process.env.RESEND_FROM || "noreply@rongdate.cn").trim()
       },
       smtp: {
         host: String(process.env.SMTP_HOST || "smtp.qq.com").trim(),
